@@ -2,9 +2,38 @@
 
 """A library for extracting TODOs from comments in Python source code."""
 
+__all__ = [
+    'Comment',
+    'get_comments_from_diff',
+    ]
+
 from bzrlib import patches
 
 from extensions import filter_none
+
+
+class Comment(object):
+
+    def __init__(self, filename, start_line, end_line, raw_text):
+        self.filename = filename
+        self.start_line = start_line
+        self.end_line = end_line
+        self.raw_text = raw_text
+
+    def __eq__(self, other):
+        return all([
+            self.filename == other.filename,
+            self.start_line == other.start_line,
+            self.end_line == other.end_line,
+            self.raw_text == other.raw_text])
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    @property
+    def text(self):
+        return '\n'.join(
+            line.lstrip()[2:].rstrip() for line in self.raw_text.splitlines())
 
 
 class PatchParser(object):
