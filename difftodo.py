@@ -13,6 +13,7 @@ from extensions import filter_none
 
 
 class Comment(object):
+    """A comment block in a Python source file."""
 
     def __init__(self, filename, start_line, raw_lines):
         self.filename = filename.split('\t')[0]
@@ -59,6 +60,7 @@ class Comment(object):
 
 
 class PatchParser(object):
+    """An event parser for patches."""
 
     def __init__(self, patch):
         self.patch = patch
@@ -107,6 +109,7 @@ class PatchParser(object):
 
 
 class CommentParser(PatchParser):
+    """A patch parser that yields comments added in a patch."""
 
     def __init__(self, patch):
         super(CommentParser, self).__init__(patch)
