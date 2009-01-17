@@ -13,34 +13,33 @@ class TestComment(TestCase):
     """Tests for the `Comment` class."""
 
     def test_construction(self):
-        comment = Comment("foo.py", 42, 43, "# hahaha\n# hohoho\n")
+        comment = Comment("foo.py", 42, "# hahaha\n# hohoho\n")
         self.assertEqual("foo.py", comment.filename)
         self.assertEqual(42, comment.start_line)
-        self.assertEqual(43, comment.end_line)
         self.assertEqual("# hahaha\n# hohoho\n", comment.raw_text)
 
     def test_equality(self):
-        comment1 = Comment("foo.py", 42, 43, "# hahaha\n# hohoho\n")
-        comment2 = Comment("foo.py", 42, 43, "# hahaha\n# hohoho\n")
+        comment1 = Comment("foo.py", 42, "# hahaha\n# hohoho\n")
+        comment2 = Comment("foo.py", 42, "# hahaha\n# hohoho\n")
         self.assertEqual(comment1, comment2)
         self.assertEqual(comment2, comment1)
 
     def test_text(self):
         # The text attribute gets rid of the hash character and just has the
         # text.
-        comment = Comment("foo.py", 42, 43, "# hahaha\n# hohoho  \n")
+        comment = Comment("foo.py", 42, "# hahaha\n# hohoho  \n")
         self.assertEqual(["hahaha", "hohoho"], list(comment.text))
 
     def test_text_disregards_pre_comment_indentation(self):
-        comment = Comment("foo.py", 42, 43, "# hahaha\n    # hohoho  \n")
+        comment = Comment("foo.py", 42, "# hahaha\n    # hohoho  \n")
         self.assertEqual(["hahaha", "hohoho"], list(comment.text))
 
     def test_text_preserves_post_comment_indentation(self):
-        comment = Comment("foo.py", 42, 43, "# hahaha\n#     hohoho  \n")
+        comment = Comment("foo.py", 42, "# hahaha\n#     hohoho  \n")
         self.assertEqual(["hahaha","    hohoho"], list(comment.text))
 
     def test_str(self):
-        comment = Comment("foo.py", 42, 43, "# hahaha\n# hohoho\n")
+        comment = Comment("foo.py", 42, "# hahaha\n# hohoho\n")
         self.assertEqual(
             ("foo.py:42\n"
              "  hahaha\n"
