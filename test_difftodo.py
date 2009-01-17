@@ -49,6 +49,11 @@ class TestComment(TestCase):
 
 class TestCommentsFromDiff(TestCase):
 
+    def assertCommentsEqual(self, patch, comments):
+        # Assert that the raw text of the comments added in 'patch' is
+        # 'comments'.
+        self.assertEqual(comments, list(get_comments_from_diff(patch)))
+
     def parse_diff(self, diff_text):
         diff_lines = (line + '\n' for line in diff_text.splitlines())
         return patches.parse_patches(diff_lines)
@@ -72,7 +77,7 @@ class TestCommentsFromDiff(TestCase):
          pass
 """)
         patch = self.parse_diff(diff)
-        self.assertEqual([], list(get_comments_from_diff(patch)))
+        self.assertCommentsEqual(patch, [])
 
     def test_comment_added(self):
         # If the diff adds a comment, then it's in the stream.
@@ -88,8 +93,8 @@ class TestCommentsFromDiff(TestCase):
          pass
 """)
         patch = self.parse_diff(diff)
-        comments = list(get_comments_from_diff(patch))
-        self.assertEqual(["# This test is going to be awesome.\n"], comments)
+        self.assertCommentsEqual(
+            patch, ["# This test is going to be awesome.\n"])
 
     def test_comment_removed(self):
         # If the diff removes a comment, then it's not in the stream.
@@ -105,8 +110,7 @@ class TestCommentsFromDiff(TestCase):
          pass
 """)
         patch = self.parse_diff(diff)
-        comments = list(get_comments_from_diff(patch))
-        self.assertEqual([], comments)
+        self.assertCommentsEqual(patch, [])
 
     def test_multiline_comment_added(self):
         diff = ("""\
@@ -122,10 +126,9 @@ class TestCommentsFromDiff(TestCase):
          pass
 """)
         patch = self.parse_diff(diff)
-        comments = list(get_comments_from_diff(patch))
-        self.assertEqual([
+        self.assertCommentsEqual(patch, [
             "# This test is going to be awesome.\n"
-            "# So awesome, I cannot tell you how awesome.\n"], comments)
+            "# So awesome, I cannot tell you how awesome.\n"])
 
     def test_multiple_comments_added(self):
         diff = ("""\
@@ -143,11 +146,10 @@ class TestCommentsFromDiff(TestCase):
 
 """)
         patch = self.parse_diff(diff)
-        comments = list(get_comments_from_diff(patch))
-        self.assertEqual([
+        self.assertCommentsEqual(patch, [
             ("# This test is going to be awesome.\n"
              "# So awesome, I cannot tell you how awesome.\n"),
-            "# Awesome, I tell you.\n"], comments)
+            "# Awesome, I tell you.\n"])
 
     def test_comment_modified(self):
         diff = ("""\
@@ -165,8 +167,7 @@ class TestCommentsFromDiff(TestCase):
 
 """)
         patch = self.parse_diff(diff)
-        comments = list(get_comments_from_diff(patch))
-        self.assertEqual(["# Line 1\n# Line 2\n# Line 3\n"], comments)
+        self.assertCommentsEqual(patch, ["# Line 1\n# Line 2\n# Line 3\n"])
 
     def test_comment_appended(self):
         diff = ("""\
@@ -181,9 +182,8 @@ class TestCommentsFromDiff(TestCase):
          pass
 """)
         patch = self.parse_diff(diff)
-        comments = list(get_comments_from_diff(patch))
-        self.assertEqual(
-            ["# Line 1\n# Line 2\n# Line 3\n# Line 4\n"], comments)
+        self.assertCommentsEqual(
+            patch, ["# Line 1\n# Line 2\n# Line 3\n# Line 4\n"])
 
     def test_comment_prepended(self):
         diff = ("""\
@@ -201,6 +201,5 @@ class TestCommentsFromDiff(TestCase):
 
 """)
         patch = self.parse_diff(diff)
-        comments = list(get_comments_from_diff(patch))
-        self.assertEqual(
-            ["# Line 0\n# Line 1\n# Line 2\n# Line 3\n"], comments)
+        self.assertCommentsEqual(
+            patch, ["# Line 0\n# Line 1\n# Line 2\n# Line 3\n"])
