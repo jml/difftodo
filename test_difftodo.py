@@ -70,3 +70,43 @@ class TestCommentsFromDiff(TestCase):
         comments = list(get_comments_from_diff(patch))
         self.assertEqual([], comments)
 
+    def test_multiline_comment_added(self):
+        diff = """\
+=== modified file 'a'
+--- a	2009-01-17 02:47:22 +0000
++++ a	2009-01-17 02:47:31 +0000
+@@ -6,4 +6,5 @@
+ class TestBar(unittest.TestCase):
+ 
+     def test_bar(self):
++        # This test is going to be awesome.
++        # So awesome, I cannot tell you how awesome.
+         pass
+"""
+        patch = self.parse_diff(diff)
+        comments = list(get_comments_from_diff(patch))
+        self.assertEqual([
+            "# This test is going to be awesome.\n"
+            "# So awesome, I cannot tell you how awesome.\n"], comments)
+
+    def test_multiple_comments_added(self):
+        diff = """\
+=== modified file 'a'
+--- a	2009-01-17 02:47:22 +0000
++++ a	2009-01-17 03:09:45 +0000
+@@ -6,4 +6,7 @@
+ class TestBar(unittest.TestCase):
+ 
+     def test_bar(self):
++        # This test is going to be awesome.
++        # So awesome, I cannot tell you how awesome.
+         pass
++    # Awesome, I tell you.
+
+"""
+        patch = self.parse_diff(diff)
+        comments = list(get_comments_from_diff(patch))
+        self.assertEqual([
+            ("# This test is going to be awesome.\n"
+             "# So awesome, I cannot tell you how awesome.\n"),
+            "# Awesome, I tell you.\n"], comments)
