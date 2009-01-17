@@ -32,8 +32,9 @@ class Comment(object):
 
     @property
     def text(self):
-        return '\n'.join(
-            line.lstrip()[2:].rstrip() for line in self.raw_text.splitlines())
+        return (
+            line.lstrip()[2:].rstrip()
+            for line in self.raw_text.splitlines())
 
 
 class PatchParser(object):

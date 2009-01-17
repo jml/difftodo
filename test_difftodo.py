@@ -29,15 +29,15 @@ class TestComment(TestCase):
         # The text attribute gets rid of the hash character and just has the
         # text.
         comment = Comment("foo.py", 42, 43, "# hahaha\n# hohoho  \n")
-        self.assertEqual("hahaha\nhohoho", comment.text)
+        self.assertEqual(["hahaha", "hohoho"], list(comment.text))
 
     def test_text_disregards_pre_comment_indentation(self):
         comment = Comment("foo.py", 42, 43, "# hahaha\n    # hohoho  \n")
-        self.assertEqual("hahaha\nhohoho", comment.text)
+        self.assertEqual(["hahaha", "hohoho"], list(comment.text))
 
     def test_text_preserves_post_comment_indentation(self):
         comment = Comment("foo.py", 42, 43, "# hahaha\n#     hohoho  \n")
-        self.assertEqual("hahaha\n    hohoho", comment.text)
+        self.assertEqual(["hahaha","    hohoho"], list(comment.text))
 
 
 class TestCommentsFromDiff(TestCase):
