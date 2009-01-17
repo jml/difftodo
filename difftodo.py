@@ -102,7 +102,6 @@ def get_comments_from_diff(patches):
 
 
 # TODO:
-# - what happens when appending comments
 # - create an object for comments
 #   - filename
 #   - start_line
@@ -113,3 +112,4 @@ def get_comments_from_diff(patches):
 # - filter comments looking for a particular tag
 # - split comments based on presence of tag (e.g. # XXX: foo\n# XXX: bar\n)
 # - formatters
+#   - emacs

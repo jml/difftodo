@@ -130,4 +130,39 @@ class TestCommentsFromDiff(TestCase):
         comments = list(get_comments_from_diff(patch))
         self.assertEqual(["# Line 1\n# Line 2\n# Line 3\n"], comments)
 
+    def test_comment_appended(self):
+        diff = ("""\
+=== modified file 'a'
+--- a	2009-01-17 05:07:59 +0000
++++ a	2009-01-17 05:08:20 +0000
+@@ -9,4 +9,5 @@
+         # Line 1
+         # Line 2
+         # Line 3
++        # Line 4
+         pass
+""")
+        patch = self.parse_diff(diff)
+        comments = list(get_comments_from_diff(patch))
+        self.assertEqual(
+            ["# Line 1\n# Line 2\n# Line 3\n# Line 4\n"], comments)
 
+    def test_comment_prepended(self):
+        diff = ("""\
+=== modified file 'a'
+--- a	2009-01-17 05:07:59 +0000
++++ a	2009-01-17 05:10:39 +0000
+@@ -6,6 +6,7 @@
+ class TestBar(unittest.TestCase):
+ 
+     def test_bar(self):
++        # Line 0
+         # Line 1
+         # Line 2
+         # Line 3
+
+""")
+        patch = self.parse_diff(diff)
+        comments = list(get_comments_from_diff(patch))
+        self.assertEqual(
+            ["# Line 0\n# Line 1\n# Line 2\n# Line 3\n"], comments)
