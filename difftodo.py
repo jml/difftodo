@@ -7,47 +7,46 @@ from bzrlib import patches
 
 
 class PatchParser(object):
-    """Parser for a single patch."""
 
     def __init__(self, patch):
         self.patch = patch
         self._hunks = patch.hunks
 
-    def parse(self):
-        self.patch_started()
+    def _iter_patch_lines(self):
         for hunk in self._hunks:
-            self.hunk_started(hunk)
             pos = hunk.mod_pos - 1
             for line in hunk.lines:
-                if isinstance(line, patches.ContextLine):
-                    self.context_line_received(hunk, pos, line.contents)
-                elif isinstance(line, patches.InsertLine):
-                    self.insert_line_received(hunk, pos, line.contents)
-                elif isinstance(line, patches.RemoveLine):
-                    self.insert_line_received(hunk, pos, line.contents)
+                yield (pos, line)
                 pos += 1
-            self.hunk_finished(hunk)
-        self.patch_finished()
 
-    def patch_started(self):
-        """Called when patch parsing is started."""
+    def _get_handler_for_line(self, line):
+        if isinstance(line, patches.ContextLine):
+            return self.context_line_received
+        elif isinstance(line, patches.InsertLine):
+            return self.insert_line_received
+        elif isinstance(line, patches.RemoveLine):
+            return self.insert_line_received
+
+    def parse(self):
+        for pos, line in self._iter_patch_lines():
+            handler = self._get_handler_for_line(line)
+            result = handler(pos, line.contents)
+            if result is not None:
+                yield result
+        result = self.patch_finished()
+        if result is not None:
+            yield result
 
     def patch_finished(self):
         """Called when patch parsing is finished."""
 
-    def hunk_started(self, hunk):
-        """Called when 'hunk' is started."""
-
-    def hunk_finished(self, hunk):
-        """Called when 'hunk' is finished."""
-
-    def insert_line_received(self, hunk, line_number, line_contents):
+    def insert_line_received(self, line_number, line_contents):
         """Called when a insert line of diff is received."""
 
-    def context_line_received(self, hunk, line_number, line_contents):
+    def context_line_received(self, line_number, line_contents):
         """Called when a context line of diff is received."""
 
-    def remove_line_received(self, hunk, line_number, line_contents):
+    def remove_line_received(self, line_number, line_contents):
         """Called when a remove line of diff is received."""
 
 
@@ -63,33 +62,27 @@ class CommentParser(PatchParser):
     def _end_comment(self):
         if len(self._current_comment) == 0:
             return
-        self.comment_received(
-            ''.join((line.lstrip() for line in self._current_comment)))
+        comment = ''.join((line.lstrip() for line in self._current_comment))
         self._current_comment = []
+        return comment
 
-    def insert_line_received(self, hunk, line_number, contents):
+    def insert_line_received(self, line_number, contents):
         if self.is_comment(contents):
             self._current_comment.append(contents)
         else:
-            self._end_comment()
+            return self._end_comment()
 
-    def context_line_received(self, hunk, line_number, contents):
-        self._end_comment()
+    def context_line_received(self, line_number, contents):
+        return self._end_comment()
 
-    def remove_line_received(self, hunk, line_number, contents):
-        self._end_comment()
+    def remove_line_received(self, line_number, contents):
+        return self._end_comment()
 
     def patch_finished(self):
-        self._end_comment()
-
-    def comment_received(self, comment):
-        pass
+        return self._end_comment()
 
 
 def get_comments_from_diff(patches):
-    comments = []
     for patch in patches:
-        parser = CommentParser(patch)
-        parser.comment_received = comments.append
-        parser.parse()
-    return comments
+        for comment in CommentParser(patch).parse():
+            yield comment
