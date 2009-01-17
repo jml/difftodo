@@ -30,6 +30,12 @@ class Comment(object):
     def __ne__(self, other):
         return not (self == other)
 
+    def __str__(self):
+        lines = ["%s:%s" % (self.filename, self.start_line)]
+        lines.extend(["  " + line for line in self.text])
+        lines.append('')
+        return '\n'.join(lines)
+
     @property
     def text(self):
         return (

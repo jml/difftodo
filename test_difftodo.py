@@ -39,6 +39,13 @@ class TestComment(TestCase):
         comment = Comment("foo.py", 42, 43, "# hahaha\n#     hohoho  \n")
         self.assertEqual(["hahaha","    hohoho"], list(comment.text))
 
+    def test_str(self):
+        comment = Comment("foo.py", 42, 43, "# hahaha\n# hohoho\n")
+        self.assertEqual(
+            ("foo.py:42\n"
+             "  hahaha\n"
+             "  hohoho\n"), str(comment))
+
 
 class TestCommentsFromDiff(TestCase):
 
