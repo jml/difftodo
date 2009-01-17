@@ -110,3 +110,24 @@ class TestCommentsFromDiff(TestCase):
             ("# This test is going to be awesome.\n"
              "# So awesome, I cannot tell you how awesome.\n"),
             "# Awesome, I tell you.\n"], comments)
+
+    def test_comment_modified(self):
+        diff = """\
+=== modified file 'a'
+--- a	2009-01-17 04:04:42 +0000
++++ a	2009-01-17 04:04:48 +0000
+@@ -7,6 +7,6 @@
+ 
+     def test_bar(self):
+         # Line 1
+-        # Lone 2
++        # Line 2
+         # Line 3
+         pass
+
+"""
+        patch = self.parse_diff(diff)
+        comments = list(get_comments_from_diff(patch))
+        self.assertEqual(["# Line 1\n# Line 2\n# Line 3\n"], comments)
+
+

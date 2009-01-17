@@ -25,7 +25,9 @@ class PatchParser(object):
         elif isinstance(line, patches.InsertLine):
             return self.insert_line_received
         elif isinstance(line, patches.RemoveLine):
-            return self.insert_line_received
+            return self.remove_line_received
+        else:
+            raise AssertionError("Cannot handle %r" % (line,))
 
     def parse(self):
         for pos, line in self._iter_patch_lines():
@@ -54,6 +56,7 @@ class CommentParser(PatchParser):
 
     def __init__(self, patch):
         super(CommentParser, self).__init__(patch)
+        self._insert_in_comment = False
         self._current_comment = []
 
     def is_comment(self, contents):
@@ -62,21 +65,32 @@ class CommentParser(PatchParser):
     def _end_comment(self):
         if len(self._current_comment) == 0:
             return
-        comment = ''.join((line.lstrip() for line in self._current_comment))
-        self._current_comment = []
+        current_comment, self._current_comment = self._current_comment, []
+        if not self._insert_in_comment:
+            return
+        comment = ''.join((line.lstrip() for line in current_comment))
+        self._insert_in_comment = False
         return comment
+
+    def _add_to_comment(self, contents):
+        self._current_comment.append(contents)
 
     def insert_line_received(self, line_number, contents):
         if self.is_comment(contents):
-            self._current_comment.append(contents)
+            self._insert_in_comment = True
+            self._add_to_comment(contents)
         else:
             return self._end_comment()
 
     def context_line_received(self, line_number, contents):
-        return self._end_comment()
+        if self.is_comment(contents):
+            self._add_to_comment(contents)
+        else:
+            return self._end_comment()
 
     def remove_line_received(self, line_number, contents):
-        return self._end_comment()
+        if not self.is_comment(contents):
+            return self._end_comment()
 
     def patch_finished(self):
         return self._end_comment()
