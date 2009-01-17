@@ -5,8 +5,12 @@
 from bzrlib import patches
 
 
-def get_comments_from_diff(patch):
-    return []
+def get_comments_from_diff(patches):
+    for patch in patches:
+        for (line_no, line) in patch.iter_inserted():
+            stripped_line = line.contents.lstrip()
+            if stripped_line.startswith('#'):
+                yield stripped_line
 
 
 def get_todos_from_diff(patch):
