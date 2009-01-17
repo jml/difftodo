@@ -158,14 +158,4 @@ def get_comments_from_diff(patches):
 
 
 # TODO:
-# - create an object for comments
-#   - filename
-#   - start_line
-#   - end_line ??
-#   - text
-#     - with hashes ??
-#     - without hashes and formatted
-# - filter comments looking for a particular tag
 # - split comments based on presence of tag (e.g. # XXX: foo\n# XXX: bar\n)
-# - formatters
-#   - emacs
