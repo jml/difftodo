@@ -34,6 +34,9 @@ class Comment(object):
         lines.append('')
         return '\n'.join(lines)
 
+    def append(self, new_line):
+        self.raw_text += new_line
+
     @property
     def text(self):
         return (

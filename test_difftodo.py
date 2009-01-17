@@ -45,6 +45,11 @@ class TestComment(TestCase):
              "  hahaha\n"
              "  hohoho\n"), str(comment))
 
+    def test_append(self):
+        comment = Comment("foo.py", 42, "# hahaha\n")
+        comment.append("# hohoho\n")
+        self.assertEqual("# hahaha\n# hohoho\n", comment.raw_text)
+
 
 class TestCommentsFromDiff(TestCase):
 
