@@ -20,6 +20,10 @@ class Comment(object):
         self.start_line = start_line
         self.raw_lines = raw_lines
 
+    @classmethod
+    def is_comment(self, line):
+        return line.lstrip().startswith('#')
+
     def __eq__(self, other):
         return all([
             self.filename == other.filename,
@@ -117,7 +121,7 @@ class CommentParser(PatchParser):
         self._current_comment = None
 
     def is_comment(self, contents):
-        return contents.lstrip().startswith('#')
+        return Comment.is_comment(contents)
 
     def _end_comment(self):
         if self._current_comment is None:
