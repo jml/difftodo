@@ -45,7 +45,7 @@ class TestComment(TestCase):
     def test_str(self):
         comment = Comment("foo.py", 42, ["# hahaha\n", "# hohoho\n"])
         self.assertEqual(
-            ("foo.py:42\n"
+            ("foo.py:42:\n"
              "  hahaha\n"
              "  hohoho\n"), str(comment))
 
@@ -53,6 +53,12 @@ class TestComment(TestCase):
         comment = Comment("foo.py", 42, ["# hahaha\n"])
         comment.append("# hohoho\n")
         self.assertEqual(["# hahaha\n", "# hohoho\n"], comment.raw_lines)
+
+    def test_contains(self):
+        # We can look for text in comments.
+        comment = Comment("foo.py", 42, ["# hahaha\n"])
+        self.assertTrue("ha" in comment)
+        self.assertTrue("# h" not in comment)
 
 
 class TestCommentsFromDiff(TestCase):

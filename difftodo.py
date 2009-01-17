@@ -36,10 +36,13 @@ class Comment(object):
             self.raw_lines)
 
     def __str__(self):
-        lines = ["%s:%s" % (self.filename, self.start_line)]
+        lines = ["%s:%s:" % (self.filename, self.start_line)]
         lines.extend(["  " + line for line in self.lines])
         lines.append('')
         return '\n'.join(lines)
+
+    def __contains__(self, text):
+        return text in self.text
 
     def append(self, new_line):
         self.raw_lines.append(new_line)
@@ -49,6 +52,10 @@ class Comment(object):
         return (
             line.lstrip()[2:].rstrip()
             for line in self.raw_lines)
+
+    @property
+    def text(self):
+        return '\n'.join(self.lines)
 
 
 class PatchParser(object):
