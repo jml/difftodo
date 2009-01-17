@@ -31,8 +31,7 @@ class PatchParser(object):
 
     def parse(self):
         for pos, line in self._iter_patch_lines():
-            handler = self._get_handler_for_line(line)
-            result = handler(pos, line.contents)
+            result = self.line_received(pos, line)
             if result is not None:
                 yield result
         result = self.patch_finished()
@@ -41,6 +40,10 @@ class PatchParser(object):
 
     def patch_finished(self):
         """Called when patch parsing is finished."""
+
+    def line_received(self, line_number, line):
+        handler = self._get_handler_for_line(line)
+        return handler(line_number, line.contents)
 
     def insert_line_received(self, line_number, line_contents):
         """Called when a insert line of diff is received."""
@@ -75,22 +78,18 @@ class CommentParser(PatchParser):
     def _add_to_comment(self, contents):
         self._current_comment.append(contents)
 
-    def insert_line_received(self, line_number, contents):
-        if self.is_comment(contents):
-            self._insert_in_comment = True
-            self._add_to_comment(contents)
+    def line_received(self, line_number, line):
+        if self.is_comment(line.contents):
+            return super(CommentParser, self).line_received(line_number, line)
         else:
             return self._end_comment()
+
+    def insert_line_received(self, line_number, contents):
+        self._insert_in_comment = True
+        self._add_to_comment(contents)
 
     def context_line_received(self, line_number, contents):
-        if self.is_comment(contents):
-            self._add_to_comment(contents)
-        else:
-            return self._end_comment()
-
-    def remove_line_received(self, line_number, contents):
-        if not self.is_comment(contents):
-            return self._end_comment()
+        self._add_to_comment(contents)
 
     def patch_finished(self):
         return self._end_comment()
