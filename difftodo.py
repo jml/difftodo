@@ -14,34 +14,34 @@ from extensions import filter_none
 
 class Comment(object):
 
-    def __init__(self, filename, start_line, raw_text):
+    def __init__(self, filename, start_line, raw_lines):
         self.filename = filename
         self.start_line = start_line
-        self.raw_text = raw_text
+        self.raw_lines = raw_lines
 
     def __eq__(self, other):
         return all([
             self.filename == other.filename,
             self.start_line == other.start_line,
-            self.raw_text == other.raw_text])
+            self.raw_lines == other.raw_lines])
 
     def __ne__(self, other):
         return not (self == other)
 
     def __str__(self):
         lines = ["%s:%s" % (self.filename, self.start_line)]
-        lines.extend(["  " + line for line in self.text])
+        lines.extend(["  " + line for line in self.lines])
         lines.append('')
         return '\n'.join(lines)
 
     def append(self, new_line):
-        self.raw_text += new_line
+        self.raw_lines.append(new_line)
 
     @property
-    def text(self):
+    def lines(self):
         return (
             line.lstrip()[2:].rstrip()
-            for line in self.raw_text.splitlines())
+            for line in self.raw_lines)
 
 
 class PatchParser(object):
