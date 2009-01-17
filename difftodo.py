@@ -99,3 +99,16 @@ def get_comments_from_diff(patches):
     for patch in patches:
         for comment in CommentParser(patch).parse():
             yield comment
+
+
+# TODO:
+# - what happens when appending comments
+# - create an object for comments
+#   - filename
+#   - start_line
+#   - end_line ??
+#   - text
+#     - with hashes ??
+#     - without hashes and formatted
+# - filter comments looking for a particular tag
+# - formatters
