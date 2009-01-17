@@ -2,8 +2,9 @@
 
 """A library for extracting TODOs from comments in Python source code."""
 
-
 from bzrlib import patches
+
+from extensions import filter_none
 
 
 class PatchParser(object):
@@ -29,13 +30,12 @@ class PatchParser(object):
         else:
             raise AssertionError("Cannot handle %r" % (line,))
 
+    @filter_none
     def parse(self):
         for pos, line in self._iter_patch_lines():
-            result = self.line_received(pos, line)
-            if result is not None:
+            for result in self.line_received(pos, line):
                 yield result
-        result = self.patch_finished()
-        if result is not None:
+        for result in self.patch_finished():
             yield result
 
     def patch_finished(self):
@@ -43,7 +43,7 @@ class PatchParser(object):
 
     def line_received(self, line_number, line):
         handler = self._get_handler_for_line(line)
-        return handler(line_number, line.contents)
+        yield handler(line_number, line.contents)
 
     def insert_line_received(self, line_number, line_contents):
         """Called when a insert line of diff is received."""
@@ -80,9 +80,11 @@ class CommentParser(PatchParser):
 
     def line_received(self, line_number, line):
         if self.is_comment(line.contents):
-            return super(CommentParser, self).line_received(line_number, line)
+            upcall = super(CommentParser, self).line_received
+            for result in upcall(line_number, line):
+                yield result
         else:
-            return self._end_comment()
+            yield self._end_comment()
 
     def insert_line_received(self, line_number, contents):
         self._insert_in_comment = True
@@ -92,7 +94,7 @@ class CommentParser(PatchParser):
         self._add_to_comment(contents)
 
     def patch_finished(self):
-        return self._end_comment()
+        yield self._end_comment()
 
 
 def get_comments_from_diff(patches):
