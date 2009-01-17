@@ -6,7 +6,7 @@
 from bzrlib import patches
 from bzrlib.tests import TestCase
 
-from difftodo import Comment, get_comments_from_diff
+from difftodo import Comment, get_comments_from_diff, Todo
 
 
 class TestComment(TestCase):
@@ -59,6 +59,25 @@ class TestComment(TestCase):
         comment = Comment("foo.py", 42, ["# hahaha\n"])
         self.assertTrue("ha" in comment)
         self.assertTrue("# h" not in comment)
+
+
+class TestTodo(TestCase):
+
+    def test_constructor(self):
+        todo = Todo('filename.py', 32, ['XXX: hello', 'bar'])
+        self.assertEqual('filename.py', todo.filename)
+        self.assertEqual(32, todo.start_line)
+        self.assertEqual(['XXX: hello', 'bar'], todo.lines)
+
+    def test_str(self):
+        todo = Todo('filename.py', 32, ['XXX: hello', 'bar'])
+        self.assertEqual('filename.py:32:\n  XXX: hello\n  bar\n', str(todo))
+
+    def test_equality(self):
+        todo1 = Todo('filename.py', 32, ['XXX: hello', 'bar'])
+        todo2 = Todo('filename.py', 32, ['XXX: hello', 'bar'])
+        self.assertEqual(todo2, todo1)
+        self.assertEqual(todo1, todo2)
 
 
 class TestCommentsFromDiff(TestCase):

@@ -5,6 +5,7 @@
 __all__ = [
     'Comment',
     'get_comments_from_diff',
+    'Todo',
     ]
 
 from bzrlib import patches
@@ -61,6 +62,34 @@ class Comment(object):
     @property
     def text(self):
         return '\n'.join(self.lines)
+
+
+class Todo(object):
+
+    def __init__(self, filename, start_line, lines):
+        self.filename = filename
+        self.start_line = start_line
+        self.lines = lines
+
+    def __repr__(self):
+        return '%s(%r, %r, %r)' % (
+            self.__class__.__name__,
+            self.filename, self.start_line, self.lines)
+
+    def __str__(self):
+        lines = ["%s:%s:" % (self.filename, self.start_line)]
+        lines.extend(["  " + line for line in self.lines])
+        lines.append('')
+        return '\n'.join(lines)
+
+    def __eq__(self, other):
+        return all([
+            self.filename == other.filename,
+            self.start_line == other.start_line,
+            self.lines == other.lines])
+
+    def __ne__(self, other):
+        return not (self == other)
 
 
 class PatchParser(object):
