@@ -15,7 +15,7 @@ from extensions import filter_none
 class Comment(object):
 
     def __init__(self, filename, start_line, raw_lines):
-        self.filename = filename
+        self.filename = filename.split('\t')[0]
         self.start_line = start_line
         self.raw_lines = raw_lines
 
@@ -27,6 +27,13 @@ class Comment(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+    def __repr__(self):
+        return '%s(%r, %s, %s)' % (
+            self.__class__.__name__,
+            self.filename,
+            self.start_line,
+            self.raw_lines)
 
     def __str__(self):
         lines = ["%s:%s" % (self.filename, self.start_line)]
@@ -97,23 +104,26 @@ class CommentParser(PatchParser):
     def __init__(self, patch):
         super(CommentParser, self).__init__(patch)
         self._insert_in_comment = False
-        self._current_comment = []
+        self._current_comment = None
 
     def is_comment(self, contents):
         return contents.lstrip().startswith('#')
 
     def _end_comment(self):
-        if len(self._current_comment) == 0:
+        if self._current_comment is None:
             return
-        current_comment, self._current_comment = self._current_comment, []
+        current_comment, self._current_comment = self._current_comment, None
         if not self._insert_in_comment:
             return
-        comment = ''.join((line.lstrip() for line in current_comment))
         self._insert_in_comment = False
-        return comment
+        return current_comment
 
-    def _add_to_comment(self, contents):
-        self._current_comment.append(contents)
+    def _add_to_comment(self, line_number, contents):
+        if self._current_comment is None:
+            self._current_comment = Comment(
+                self.patch.newname, line_number, [contents])
+        else:
+            self._current_comment.append(contents)
 
     def line_received(self, line_number, line):
         if self.is_comment(line.contents):
@@ -125,10 +135,10 @@ class CommentParser(PatchParser):
 
     def insert_line_received(self, line_number, contents):
         self._insert_in_comment = True
-        self._add_to_comment(contents)
+        self._add_to_comment(line_number, contents)
 
     def context_line_received(self, line_number, contents):
-        self._add_to_comment(contents)
+        self._add_to_comment(line_number, contents)
 
     def patch_finished(self):
         yield self._end_comment()

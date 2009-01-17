@@ -24,6 +24,10 @@ class TestComment(TestCase):
         self.assertEqual(comment1, comment2)
         self.assertEqual(comment2, comment1)
 
+    def test_trailing_filename_discarded(self):
+        comment = Comment("a\t2009-01-17 02:47:31 +0000", 42, ["# foo"])
+        self.assertEqual('a', comment.filename)
+
     def test_lines(self):
         # The text attribute gets rid of the hash character and just has the
         # text.
@@ -56,7 +60,11 @@ class TestCommentsFromDiff(TestCase):
     def assertCommentsEqual(self, patch, comments):
         # Assert that the raw text of the comments added in 'patch' is
         # 'comments'.
-        self.assertEqual(comments, list(get_comments_from_diff(patch)))
+        found_comments = get_comments_from_diff(patch)
+        self.assertEqual(
+            comments,
+            [''.join(line.lstrip() for line in comment.raw_lines)
+             for comment in found_comments])
 
     def parse_diff(self, diff_text):
         diff_lines = (line + '\n' for line in diff_text.splitlines())
@@ -99,6 +107,25 @@ class TestCommentsFromDiff(TestCase):
         patch = self.parse_diff(diff)
         self.assertCommentsEqual(
             patch, ["# This test is going to be awesome.\n"])
+
+    def test_comment_metadata(self):
+        diff = ("""\
+=== modified file 'a'
+--- a	2009-01-17 02:47:22 +0000
++++ a	2009-01-17 02:47:31 +0000
+@@ -6,4 +6,5 @@
+ class TestBar(unittest.TestCase):
+ 
+     def test_bar(self):
++        # This test is going to be awesome.
+         pass
+""")
+        patch = self.parse_diff(diff)
+        comments = list(get_comments_from_diff(patch))
+        self.assertEqual(
+            [Comment('a', 8,
+                     ['        # This test is going to be awesome.\n'])],
+            comments)
 
     def test_comment_removed(self):
         # If the diff removes a comment, then it's not in the stream.
