@@ -7,6 +7,7 @@ __all__ = [
     'get_comments_from_diff',
     'Todo',
     'todo_from_comment',
+    'todos_from_comments',
     ]
 
 from bzrlib import patches
@@ -111,6 +112,12 @@ def todo_from_comment(comment, tags):
             comment.filename,
             comment.start_line + current_todo_start,
             lines[current_todo_start:])
+
+
+def todos_from_comments(comments, tags):
+    for comment in comments:
+        for todo in todo_from_comment(comment, tags):
+            yield todo
 
 
 class PatchParser(object):

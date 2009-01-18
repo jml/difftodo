@@ -1,16 +1,21 @@
 import sys
 
-from bzrlib import patches
-from difftodo import get_comments_from_diff
+from bzrlib.patches import parse_patches
+from difftodo import get_comments_from_diff, todos_from_comments
 
 # XXX: Turn this into a Bazaar plugin
 # XXX: Allow customization of TODO tags.
 
+# TODO: oaeuah
+
 def main():
-    phile = sys.stdin
-    for comment in get_comments_from_diff(patches.parse_patches(phile)):
-        if 'TODO' in comment or 'XXX' in comment:
-            print str(comment)
+    patches = parse_patches(sys.stdin)
+    comments = get_comments_from_diff(patches)
+    tags = ('XXX', 'TODO')
+    number = -1
+    for number, todo in enumerate(todos_from_comments(comments, tags)):
+        print todo
+    print "Things to do: %s" % (number + 1)
 
 
 if __name__ == '__main__':
