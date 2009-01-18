@@ -219,7 +219,3 @@ def get_comments_from_diff(patches):
     for patch in patches:
         for comment in CommentParser(patch).parse():
             yield comment
-
-
-# TODO:
-# - split comments based on presence of tag (e.g. # XXX: foo\n# XXX: bar\n)
