@@ -109,9 +109,22 @@ class TestTodoFromComment(TestCase):
         # XXX or TODO.
         self.assertEqual(
             [Todo(
-                comment.filename, comment.start_line,
-                ['first line', 'XXX: hello australia!', 'second line'])],
+                comment.filename, comment.start_line + 1,
+                ['XXX: hello australia!', 'second line'])],
             todos)
+
+    def test_two_todos(self):
+        comment = self.makeComment([
+            'XXX: first line',
+            'TODO: hello australia!',
+            'second line'])
+        todos = list(todo_from_comment(comment, ['XXX', 'TODO']))
+        # XXX: Maybe we want to change this so that the todo starts at the
+        # XXX or TODO.
+        self.assertEqual(
+            [Todo(comment.filename, comment.start_line, ['XXX: first line']),
+             Todo(comment.filename, comment.start_line + 1,
+                  ['TODO: hello australia!', 'second line']),], todos)
 
 
 class TestCommentsFromDiff(TestCase):

@@ -95,11 +95,22 @@ class Todo(object):
 
 def todo_from_comment(comment, tags):
     """Yield all todos hiding in 'comment'."""
-    if any(tag in comment for tag in tags):
-        return [
-            Todo(comment.filename, comment.start_line, list(comment.lines))]
-    else:
-        return []
+    lines = list(comment.lines)
+    current_todo_start = None
+
+    for offset, line in enumerate(lines):
+        if any(tag in line for tag in tags):
+            if current_todo_start is not None:
+                yield Todo(
+                    comment.filename,
+                    comment.start_line + current_todo_start,
+                    lines[current_todo_start:offset])
+            current_todo_start = offset
+    if current_todo_start is not None:
+        yield Todo(
+            comment.filename,
+            comment.start_line + current_todo_start,
+            lines[current_todo_start:])
 
 
 class PatchParser(object):
