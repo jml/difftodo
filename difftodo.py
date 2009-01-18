@@ -6,6 +6,7 @@ __all__ = [
     'Comment',
     'get_comments_from_diff',
     'Todo',
+    'todo_from_comment',
     ]
 
 from bzrlib import patches
@@ -90,6 +91,15 @@ class Todo(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
+def todo_from_comment(comment, tags):
+    """Yield all todos hiding in 'comment'."""
+    if any(tag in comment for tag in tags):
+        return [
+            Todo(comment.filename, comment.start_line, list(comment.lines))]
+    else:
+        return []
 
 
 class PatchParser(object):

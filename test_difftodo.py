@@ -6,7 +6,7 @@
 from bzrlib import patches
 from bzrlib.tests import TestCase
 
-from difftodo import Comment, get_comments_from_diff, Todo
+from difftodo import Comment, get_comments_from_diff, Todo, todo_from_comment
 
 
 class TestComment(TestCase):
@@ -78,6 +78,40 @@ class TestTodo(TestCase):
         todo2 = Todo('filename.py', 32, ['XXX: hello', 'bar'])
         self.assertEqual(todo2, todo1)
         self.assertEqual(todo1, todo2)
+
+
+class TestTodoFromComment(TestCase):
+
+    def makeComment(self, comment_text):
+        return Comment(
+            'arbitrary.py', 1, ['# ' + line for line in comment_text])
+
+    def test_no_todos(self):
+        comment = self.makeComment(['hello australia!'])
+        todos = list(todo_from_comment(comment, ['XXX', 'TODO']))
+        self.assertEqual([], todos)
+
+    def test_one_todo(self):
+        comment = self.makeComment(['XXX: hello australia!'])
+        todos = list(todo_from_comment(comment, ['XXX', 'TODO']))
+        self.assertEqual(
+            [Todo(
+                comment.filename, comment.start_line,
+                ['XXX: hello australia!'])], todos)
+
+    def test_one_todo_embedded(self):
+        comment = self.makeComment([
+            'first line',
+            'XXX: hello australia!',
+            'second line'])
+        todos = list(todo_from_comment(comment, ['XXX', 'TODO']))
+        # XXX: Maybe we want to change this so that the todo starts at the
+        # XXX or TODO.
+        self.assertEqual(
+            [Todo(
+                comment.filename, comment.start_line,
+                ['first line', 'XXX: hello australia!', 'second line'])],
+            todos)
 
 
 class TestCommentsFromDiff(TestCase):
