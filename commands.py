@@ -1,7 +1,7 @@
 from StringIO import StringIO
 
 from bzrlib.commands import Command, register_command
-from bzrlib.diff import get_trees_and_branches_to_diff, show_diff_trees
+from bzrlib.diff import get_trees_and_branches_to_diff_locked, show_diff_trees
 from bzrlib.option import (
     _parse_revision_str,
     )
@@ -18,8 +18,8 @@ class cmd_todo(Command):
 
     def run(self):
         revision = _parse_revision_str('submit:')
-        diff_data = get_trees_and_branches_to_diff(
-            None, revision, None, None, apply_view=True)
+        diff_data = get_trees_and_branches_to_diff_locked(
+            None, revision, None, None, self.add_cleanup, apply_view=True)
         (old_tree, new_tree, old_branch, new_branch, specific_files,
          extra_trees) = diff_data
         stream = StringIO()
