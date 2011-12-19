@@ -125,7 +125,7 @@ class PatchParser(object):
 
     def __init__(self, patch):
         self.patch = patch
-        self._hunks = patch.hunks
+        self._hunks = getattr(patch, 'hunks', [])
 
     def _iter_patch_lines(self):
         for hunk in self._hunks:
