@@ -1,32 +1,10 @@
 (provide 'bzr-todo)
 
-(defun search-upwards (filename starting-path)
-  "Search for `filename' in every directory from `starting-path' up."
-  (defun parent-dir (path)
-    (file-name-directory (directory-file-name path)))
+;; Run 'code' at the root of the branch which dirname is in.
+(defmacro at-bzr-root (dirname &rest code)
+  `(let ((default-directory (locate-dominating-file (expand-file-name ,dirname) ".bzr"))) ,@code))
 
-  (let ((path (file-name-as-directory starting-path)))
-    (if (file-exists-p (concat path filename))
-        path
-      (let ((parent (parent-dir path)))
-        (if (string= parent path)
-            nil
-          (search-upwards filename parent))))))
-
-
-(defmacro with-cd (dirname &rest code)
-  `(let ((old-dirname default-directory)
-	 (start-buffer (current-buffer)))
-     (cd ,dirname)
-     (unwind-protect (progn ,@code)
-       (let ((end-buffer (current-buffer)))
-	 ;; (cd ,dirname)
-	 (set-buffer start-buffer)
-	 (cd old-dirname)
-	 (set-buffer end-buffer)))))
-
-
-(defun branch-todo ()
+(defun bzr-todo ()
+  "Find all TODOs in current branch."
   (interactive)
-  (with-cd (search-upwards ".bzr" (expand-file-name "."))
-   (compile "bzr todo" t)))
+  (at-bzr-root "." (compile "bzr todo" t)))
