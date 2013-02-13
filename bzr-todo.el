@@ -7,4 +7,6 @@
 (defun bzr-todo ()
   "Find all TODOs in current branch."
   (interactive)
-  (at-bzr-root "." (compile "bzr todo" t)))
+  (let ((default-directory (concat (locate-dominating-file (expand-file-name ".") ".bzr") "/")))
+    (compile "bzr todo" t)))
+
