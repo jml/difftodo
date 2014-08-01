@@ -79,7 +79,7 @@ class Todo(object):
             self.filename, self.start_line, self.lines)
 
     def __str__(self):
-        lines = ["%s:%s:" % (self.filename, self.start_line + 1)]
+        lines = ["%s:%s:" % (self.filename, self.start_line)]
         lines.extend(["  " + line for line in self.lines])
         lines.append('')
         return '\n'.join(lines)

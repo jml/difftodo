@@ -43,3 +43,12 @@ It's good to be able to get a list of things to do right in your coding
 environment, so you can jump straight to the thing that needs to be done.
 
 * Emacs
+
+
+## Dependency notes
+
+We're porting this project to make better use of current Python packaging
+technology. In the meantime, you should be aware that we depend on:
+
+* bzr (for diff parsing and to integrate with bzr)
+* testtools (for testing)
