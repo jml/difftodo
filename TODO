@@ -1,7 +1,6 @@
-
-- Write up and send announcement
-- Re-organize files / modules
-- Make a Bazaar plugin
-- Hack up an interactive elisp function
-- Non-diff version?
-- Non-Python version?
+Move emacs integration to its own directory
+Stop using bzr for patch parsing
+Add a Haskell comment parser
+Use entry points for command-line scripts
+Make sure there's a core script that just takes a diff
+Pluggable output format
