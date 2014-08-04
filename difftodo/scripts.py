@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2009-2014 Jonathan M. Lange <jml@mumak.net>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +16,22 @@
 import sys
 
 from bzrlib import patches
-from difftodo import get_comments_from_diff
+from difftodo import get_comments_from_diff, todos_from_comments
 
 
-def main():
+def comments_from_diff():
     phile = sys.stdin
     for comment in get_comments_from_diff(patches.parse_patches(phile)):
         print str(comment)
 
 
-if __name__ == '__main__':
-    main()
+# XXX: Allow customization of TODO tags.
+
+def todos_from_diff():
+    comments = get_comments_from_diff(patches.parse_patches(sys.stdin))
+    tags = ('XXX', 'TODO')
+    number = -1
+    for number, todo in enumerate(todos_from_comments(comments, tags)):
+        print todo
+    print "Things to do: %s" % (number + 1)
+

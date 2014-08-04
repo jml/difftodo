@@ -13,7 +13,35 @@ Further, difftodo provides support for formatting the 'todos' in Emacs
 compiler error style, so that you can easily jump to any outstanding comments
 you've marked in your code.
 
-## Supported languages
+## How to use it
+
+### Extract todos from a diff
+
+    diff -u base.py changed.py | difftodos
+
+### Find todos in a bzr branch
+
+First, you need to install this as a plugin, making sure Bazaar can find
+`difftodo.commands.cmd_todo`. It has been a long time since I've used Bazaar,
+so you'll have to figure it out yourself. If you do, please send me patches to
+improve the documentation!
+
+Then,
+
+    bzr todo
+
+That's it.
+
+### Extract comments from a diff
+
+I don't know why you'd want to do this, but...
+
+    diff -u base.py changed.py | diffcomments
+
+
+## What's supported
+
+### Languages
 
 Why do we have supported languages? Because we want to identify comments, and
 for our output, we want to strip out the syntactic markers for comments so
@@ -21,7 +49,7 @@ that the resulting output is easier to read.
 
 * Python
 
-## Supported version control systems
+### Version control systems
 
 You might wonder, 'why support version control at all'?
 
@@ -37,7 +65,7 @@ like to provide convenience tools.
 
 * Bazaar
 
-## Supported editors & IDEs
+### Editors & IDEs
 
 It's good to be able to get a list of things to do right in your coding
 environment, so you can jump straight to the thing that needs to be done.

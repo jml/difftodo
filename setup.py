@@ -39,4 +39,10 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         ],
+    entry_points = {
+        'console_scripts': [
+            'diffcomments = difftodo.scripts:comments_from_diff',
+            'difftodos = difftodo.scripts:todos_from_diff',
+        ]
+    }
 )
