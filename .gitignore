@@ -1,3 +1,4 @@
+.env/
 *.pyc
 /_trial_temp/
 /difftodo.egg-info/
