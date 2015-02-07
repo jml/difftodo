@@ -69,8 +69,17 @@ def _get_line_no(subheading, _matcher=re.compile('@@ -\d+,\d+ [+](\d+),\d+ @@'))
     return int(_matcher.search(subheading).group(1))
 
 
-def _get_filename(header_content, _matcher=re.compile(r'b/(.+)\n')):
-    return _matcher.search(header_content).group(1)
+_filename_res = map(re.compile, [
+    r'b/(.+)\n',
+    r'=== modified file \'(.+)\'',
+])
+def _get_filename(header):
+    for matcher in _filename_res:
+        match = matcher.search(header)
+        if match:
+            return match.group(1)
+    raise ValueError("Couldn't extract filename from heading: {}".format(header))
+
 
 def _get_lines(content):
     return [line[1:] for line in content.splitlines()]

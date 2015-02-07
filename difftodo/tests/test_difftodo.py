@@ -160,6 +160,26 @@ class TestNewContent(TestCase):
         ]
         self.assertEqual(expected, list(get_new_content(tokens)))
 
+    def test_bzr_diff(self):
+        tokens = [
+            (Token.Generic.Heading, u"=== modified file 'a'\n"),
+            (Token.Generic.Deleted, u'--- a\t2009-01-17 05:07:59 +0000\n'),
+            (Token.Generic.Inserted, u'+++ a\t2009-01-17 05:08:20 +0000\n'),
+            (Token.Generic.Subheading, u'@@ -9,4 +9,5 @@\n'),
+            (Token.Text, u'         # Line 1\n         # Line 2\n         # Line 3\n'),
+            (Token.Generic.Inserted, u'+        # Line 4\n'),
+            (Token.Text, u'         pass\n')]
+        expected = [
+            ('a',
+             [(9, [
+                 '        # Line 1',
+                 '        # Line 2',
+                 '        # Line 3',
+                 '        # Line 4',
+                 '        pass',
+             ])])]
+        self.assertEqual(expected, list(get_new_content(tokens)))
+
 
 
 class TestComment(TestCase):
