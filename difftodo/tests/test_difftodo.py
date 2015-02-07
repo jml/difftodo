@@ -23,19 +23,19 @@ from pygments.token import Token
 
 from difftodo import Comment, get_comments_from_diff, Todo, todo_from_comment
 from difftodo._difftodo import (
+    lex_diff,
     parse_diff,
-    get_new_content,
 )
 
 
-class TestParseDiffs(TestCase):
-    """Test our ability to parse diffs."""
+class TestLexDiffs(TestCase):
+    """Test our ability to lex diffs."""
 
-    def parse_diff(self, text):
-        return list(parse_diff(text))
+    def lex_diff(self, text):
+        return list(lex_diff(text))
 
     def test_empty(self):
-        self.assertEqual([(Token.Text, u'\n')], self.parse_diff(''))
+        self.assertEqual([(Token.Text, u'\n')], self.lex_diff(''))
 
     def test_simple_bzr_diff(self):
         diff = ("""\
@@ -57,7 +57,7 @@ class TestParseDiffs(TestCase):
             (Token.Text, u'         # Line 1\n         # Line 2\n         # Line 3\n'),
             (Token.Generic.Inserted, u'+        # Line 4\n'),
             (Token.Text, u'         pass\n')]
-        self.assertEqual(expected, self.parse_diff(diff))
+        self.assertEqual(expected, self.lex_diff(diff))
 
     def test_simple_git_diff(self):
         diff = ('''\
@@ -107,11 +107,11 @@ index 1618681..cda4adb 100644
             (Token.Text,
              u' \n class Comment(object):\n     """A comment block in a Python source file."""\n')
         ]
-        self.assertEqual(expected, self.parse_diff(diff))
+        self.assertEqual(expected, self.lex_diff(diff))
 
 
-class TestNewContent(TestCase):
-    """Given a lexed diff, identify the new content."""
+class TestParseDiff(TestCase):
+    """Given a lexed diff, parse it."""
 
     def test_git_diff(self):
         tokens = [
@@ -140,25 +140,36 @@ class TestNewContent(TestCase):
         # - given the new content, load it from the file on disk
         expected = [
             ('.gitignore',
-             [(1, ['.env/',
-                   '*.pyc',
-                   '/_trial_temp/',
-                   '/difftodo.egg-info/'])]),
+             [(1, [
+                 (Token.Generic.Inserted, ['.env/']),
+                 (Token.Text, [
+                     '*.pyc',
+                     '/_trial_temp/',
+                     '/difftodo.egg-info/'
+                 ]),
+             ])]),
             ('difftodo/_difftodo.py',
              # XXX: Throws away extra diff chunk header info
-             [(26, ['',
-                    'from extensions import filter_none',
-                    '',
-                    '# A comment',
-                    '',
-                    '# XXX: Use Pygments to do all of our lexing for us.',
-                    '',
-                    '',
-                    'class Comment(object):',
-                    '    """A comment block in a Python source file."""'
-                ])]),
+             [(26, [
+                 (Token.Text, [
+                     '',
+                     'from extensions import filter_none',
+                     '',
+                 ]),
+                 (Token.Generic.Inserted, [
+                     '# A comment',
+                     '',
+                     '# XXX: Use Pygments to do all of our lexing for us.',
+                     '',
+                 ]),
+                 (Token.Text, [
+                     '',
+                     'class Comment(object):',
+                     '    """A comment block in a Python source file."""',
+                 ]),
+             ])]),
         ]
-        self.assertEqual(expected, list(get_new_content(tokens)))
+        self.assertEqual(expected, list(parse_diff(tokens)))
 
     def test_bzr_diff(self):
         tokens = [
@@ -172,13 +183,21 @@ class TestNewContent(TestCase):
         expected = [
             ('a',
              [(9, [
-                 '        # Line 1',
-                 '        # Line 2',
-                 '        # Line 3',
-                 '        # Line 4',
-                 '        pass',
-             ])])]
-        self.assertEqual(expected, list(get_new_content(tokens)))
+                 (Token.Text, [
+                     '        # Line 1',
+                     '        # Line 2',
+                     '        # Line 3',
+                 ]),
+                 (Token.Generic.Inserted, [
+                     '        # Line 4',
+                 ]),
+                 (Token.Text, [
+                     '        pass'
+                 ]),
+             ]),
+          ]),
+        ]
+        self.assertEqual(expected, list(parse_diff(tokens)))
 
 
 

@@ -34,13 +34,18 @@ from pygments import lexers
 from pygments.token import Token
 
 
-def parse_diff(text):
+def lex_diff(text):
     lexer = lexers.get_lexer_by_name('diff')
     lexer.add_filter('tokenmerge')
     return pygments.lex(text, lexer)
 
 
 def get_new_content(tokens):
+    for t in parse_diff(tokens):
+        yield t
+
+
+def parse_diff(tokens):
     # XXX: This is actually a parser. Maybe write a proper parse and separate
     # out the new content bit.
     stack = []
@@ -58,7 +63,7 @@ def get_new_content(tokens):
                     chunk.append((_get_line_no(content), []))
                 else:
                     if chunk:
-                        chunk[-1][1].extend(_get_lines(content))
+                        chunk[-1][1].append((token, _get_lines(content)))
                     else:
                         continue
     while stack:
