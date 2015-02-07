@@ -22,18 +22,64 @@ __all__ = [
     'todos_from_comments',
     ]
 
+import itertools
+import re
+
 from bzrlib import patches
 
 from extensions import filter_none
 
 import pygments
 from pygments import lexers
+from pygments.token import Token
 
 
 def parse_diff(text):
     lexer = lexers.get_lexer_by_name('diff')
     lexer.add_filter('tokenmerge')
     return pygments.lex(text, lexer)
+
+
+def get_new_content(tokens):
+    # XXX: This is actually a parser. Maybe write a proper parse and separate
+    # out the new content bit.
+    stack = []
+    for (token, content) in tokens:
+        if token == Token.Generic.Heading:
+            if stack:
+                yield stack.pop()
+            stack.append((_get_filename(content), []))
+        else:
+            if not stack:
+                continue
+            else:
+                chunk = stack[-1][1]
+                if token == Token.Generic.Subheading:
+                    chunk.append((_get_line_no(content), []))
+                else:
+                    if chunk:
+                        chunk[-1][1].extend(_get_lines(content))
+                    else:
+                        continue
+    while stack:
+        yield stack.pop()
+
+
+def _get_line_no(subheading, _matcher=re.compile('@@ -\d+,\d+ [+](\d+),\d+ @@')):
+    return int(_matcher.search(subheading).group(1))
+
+
+def _get_filename(header_content, _matcher=re.compile(r'b/(.+)\n')):
+    return _matcher.search(header_content).group(1)
+
+def _get_lines(content):
+    return [line[1:] for line in content.splitlines()]
+
+
+def sliding_window(xs, size=2):
+    iterators = itertools.tee(xs, size)
+    shifted = (itertools.islice(x, i, None) for (i, x) in enumerate(iterators))
+    return itertools.izip(*shifted)
 
 
 class Comment(object):

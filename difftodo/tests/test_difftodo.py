@@ -22,7 +22,10 @@ from bzrlib.tests import TestCase
 from pygments.token import Token
 
 from difftodo import Comment, get_comments_from_diff, Todo, todo_from_comment
-from difftodo._difftodo import parse_diff
+from difftodo._difftodo import (
+    parse_diff,
+    get_new_content,
+)
 
 
 class TestParseDiffs(TestCase):
@@ -105,6 +108,57 @@ index 1618681..cda4adb 100644
              u' \n class Comment(object):\n     """A comment block in a Python source file."""\n')
         ]
         self.assertEqual(expected, self.parse_diff(diff))
+
+
+class TestNewContent(TestCase):
+    """Given a lexed diff, identify the new content."""
+
+    def test_git_diff(self):
+        tokens = [
+            (Token.Generic.Heading,
+             u'diff --git a/.gitignore b/.gitignore\nindex 241973c..9bbeb13 100644\n'),
+            (Token.Generic.Deleted, u'--- a/.gitignore\n'),
+            (Token.Generic.Inserted, u'+++ b/.gitignore\n'),
+            (Token.Generic.Subheading, u'@@ -1,3 +1,4 @@\n'),
+            (Token.Generic.Inserted, u'+.env/\n'),
+            (Token.Text, u' *.pyc\n /_trial_temp/\n /difftodo.egg-info/\n'),
+            (Token.Generic.Heading,
+             u'diff --git a/difftodo/_difftodo.py b/difftodo/_difftodo.py\nindex '
+             '1618681..cda4adb 100644\n'),
+            (Token.Generic.Deleted, u'--- a/difftodo/_difftodo.py\n'),
+            (Token.Generic.Inserted, u'+++ b/difftodo/_difftodo.py\n'),
+            (Token.Generic.Subheading,
+             u'@@ -26,6 +26,10 @@ from bzrlib import patches\n'),
+            (Token.Text, u' \n from extensions import filter_none\n \n'),
+            (Token.Generic.Inserted,
+             u'+# A comment\n+\n+# XXX: Use Pygments to do all of our lexing for us.\n+\n'),
+            (Token.Text,
+             u' \n class Comment(object):\n     """A comment block in a Python source file."""\n')
+        ]
+        # Got two choices:
+        # - infer the contents of the new file from the diff
+        # - given the new content, load it from the file on disk
+        expected = [
+            ('.gitignore',
+             [(1, ['.env/',
+                   '*.pyc',
+                   '/_trial_temp/',
+                   '/difftodo.egg-info/'])]),
+            ('difftodo/_difftodo.py',
+             # XXX: Throws away extra diff chunk header info
+             [(26, ['',
+                    'from extensions import filter_none',
+                    '',
+                    '# A comment',
+                    '',
+                    '# XXX: Use Pygments to do all of our lexing for us.',
+                    '',
+                    '',
+                    'class Comment(object):',
+                    '    """A comment block in a Python source file."""'
+                ])]),
+        ]
+        self.assertEqual(expected, list(get_new_content(tokens)))
 
 
 
