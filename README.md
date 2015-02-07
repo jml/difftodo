@@ -19,25 +19,6 @@ you've marked in your code.
 
     diff -u base.py changed.py | difftodos
 
-### Find todos in a bzr branch
-
-First, you need to install this as a plugin, making sure Bazaar can find
-`difftodo.commands.cmd_todo`. It has been a long time since I've used Bazaar,
-so you'll have to figure it out yourself. If you do, please send me patches to
-improve the documentation!
-
-Then,
-
-    bzr todo
-
-That's it.
-
-### Extract comments from a diff
-
-I don't know why you'd want to do this, but...
-
-    diff -u base.py changed.py | diffcomments
-
 
 ## What's supported
 
@@ -48,22 +29,6 @@ for our output, we want to strip out the syntactic markers for comments so
 that the resulting output is easier to read.
 
 * Python
-
-### Version control systems
-
-You might wonder, 'why support version control at all'?
-
-Well, we want to see what comments we've added or edited, which means that the
-fundamental input is a unified diff. If you don't want to use version control,
-you can just use that.
-
-However, lots of people work on their changes in a branch, or in a forked
-repository, and for them "work that I've done" means "the difference between
-my branch and trunk" or "the difference between my repo and origin master" or
-something similar. Rather than forcing them to make a diff themselves, we'd
-like to provide convenience tools.
-
-* Bazaar
 
 ### Editors & IDEs
 
@@ -78,5 +43,5 @@ environment, so you can jump straight to the thing that needs to be done.
 We're porting this project to make better use of current Python packaging
 technology. In the meantime, you should be aware that we depend on:
 
-* bzr (for diff parsing and to integrate with bzr)
+* bzr (for diff parsing)
 * testtools (for testing)

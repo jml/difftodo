@@ -16,14 +16,7 @@
 import sys
 
 from bzrlib import patches
-from difftodo import get_comments_from_diff, todos_from_comments
-
-
-def comments_from_diff():
-    phile = sys.stdin
-    for comment in get_comments_from_diff(patches.parse_patches(phile)):
-        print str(comment)
-
+from difftodo import todos_from_comments
 
 # XXX: Allow customization of TODO tags.
 
