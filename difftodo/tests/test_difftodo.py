@@ -23,6 +23,7 @@ from pygments.token import Token
 
 from difftodo import Comment, get_comments_from_diff, Todo, todo_from_comment
 from difftodo._difftodo import (
+    get_comments,
     get_new_content,
     lex_diff,
     parse_diff,
@@ -274,6 +275,25 @@ class TestNewContent(TestCase):
                 u'pass'])])]
         self.assertEqual(expected, list(get_new_content(parsed)))
 
+
+class TestGetComments(TestCase):
+
+    def test_empty_code(self):
+        code = ''
+        self.assertEqual([], list(get_comments('foo.py', code)))
+
+    def test_only_comments(self):
+        code = """
+        # This is a comment.
+        """
+        self.assertEqual(['# This is a comment.'], list(get_comments('foo.py', code)))
+
+    def test_non_python_comments(self):
+        code = "/* This is also a comment */"
+        self.assertEqual(
+            ['/* This is also a comment */'], list(get_comments('foo.c', code)))
+
+    # XXX: How are we going to combine multi-line comments from Python without combining multiple single comments from C?
 
 class TestComment(TestCase):
     """Tests for the `Comment` class."""

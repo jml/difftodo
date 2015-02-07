@@ -105,6 +105,13 @@ def sliding_window(xs, size=2):
     return itertools.izip(*shifted)
 
 
+def get_comments(filename, code):
+    lexer = lexers.guess_lexer_for_filename(filename, code)
+    for token, content in pygments.lex(code, lexer):
+        if token in Token.Comment:
+            yield content
+
+
 class Comment(object):
     """A comment block in a Python source file."""
 
