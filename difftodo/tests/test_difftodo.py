@@ -242,15 +242,11 @@ class TestNewContent(TestCase):
         expected = [
             (u'a',
              [(20,
-               [(Token.Text,
-                 [u'class TestFoo(unittest.TestCase):',
-                  u'',
-                  u'    def test_foo(self):']),
-                (Token.Generic.Inserted,
-                 [u'        # This is the real awesome.']),
-                (Token.Text, [u'pass'])]),
-          ]),
-        ]
+               [u'class TestFoo(unittest.TestCase):',
+                u'',
+                u'    def test_foo(self):',
+                u'        # This is the real awesome.',
+                u'pass'])])]
         self.assertEqual(expected, list(get_new_content(parsed)))
 
     def test_strip_deletes_within_chunk(self):
@@ -271,15 +267,11 @@ class TestNewContent(TestCase):
         expected = [
             (u'a',
              [(6,
-               [(Token.Text,
-                 [u'class TestBar(unittest.TestCase):',
-                  u'',
-                  u'    def test_bar(self):']),
-                (Token.Generic.Inserted,
-                 [u'        # This test is awesome.']),
-                (Token.Text, [u'pass'])]),
-          ]),
-        ]
+               [u'class TestBar(unittest.TestCase):',
+                u'',
+                u'    def test_bar(self):',
+                u'        # This test is awesome.',
+                u'pass'])])]
         self.assertEqual(expected, list(get_new_content(parsed)))
 
 

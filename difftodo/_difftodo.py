@@ -90,7 +90,10 @@ def get_new_content(parsed_diff):
         new_chunks = []
         for line_no, content in chunks:
             if Token.Generic.Inserted in (t[0] for t in content):
-                new_content = [(t, c) for (t, c) in content if t != Token.Generic.Deleted]
+                new_content = []
+                for t, c in content:
+                    if t != Token.Generic.Deleted:
+                        new_content.extend(c)
                 new_chunks.append((line_no, new_content))
         if new_chunks:
             yield filename, new_chunks
