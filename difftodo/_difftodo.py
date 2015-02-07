@@ -40,11 +40,6 @@ def lex_diff(text):
     return pygments.lex(text, lexer)
 
 
-def get_new_content(tokens):
-    for t in parse_diff(tokens):
-        yield t
-
-
 def parse_diff(tokens):
     # XXX: This is actually a parser. Maybe write a proper parse and separate
     # out the new content bit.
@@ -88,6 +83,17 @@ def _get_filename(header):
 
 def _get_lines(content):
     return [line[1:] for line in content.splitlines()]
+
+
+def get_new_content(parsed_diff):
+    for filename, chunks in parsed_diff:
+        new_chunks = []
+        for line_no, content in chunks:
+            if Token.Generic.Inserted in (t[0] for t in content):
+                new_content = [(t, c) for (t, c) in content if t != Token.Generic.Deleted]
+                new_chunks.append((line_no, new_content))
+        if new_chunks:
+            yield filename, new_chunks
 
 
 def sliding_window(xs, size=2):
