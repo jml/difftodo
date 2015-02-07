@@ -26,6 +26,15 @@ from bzrlib import patches
 
 from extensions import filter_none
 
+import pygments
+from pygments import lexers
+
+
+def parse_diff(text):
+    lexer = lexers.get_lexer_by_name('diff')
+    lexer.add_filter('tokenmerge')
+    return pygments.lex(text, lexer)
+
 
 class Comment(object):
     """A comment block in a Python source file."""
