@@ -28,7 +28,7 @@ setup(
     author="Jonathan M. Lange",
     author_email="jml@mumak.net",
     install_requires=[
-        "pygments",
+        "pygments >= 2.0.2",
         ],
     zip_safe=True,
     packages=find_packages('.'),
