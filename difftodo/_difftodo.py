@@ -39,18 +39,16 @@ def parse_diff(tokens):
             if stack:
                 yield stack.pop()
             stack.append((_get_filename(content), []))
-        else:
-            if not stack:
-                continue
+        elif stack:
+            chunk = stack[-1][1]
+            if token == Token.Generic.Subheading:
+                chunk.append((_get_line_no(content), []))
+            elif chunk:
+                chunk[-1][1].append((token, _get_lines(content)))
             else:
-                chunk = stack[-1][1]
-                if token == Token.Generic.Subheading:
-                    chunk.append((_get_line_no(content), []))
-                else:
-                    if chunk:
-                        chunk[-1][1].append((token, _get_lines(content)))
-                    else:
-                        continue
+                pass
+        else:
+            pass
     while stack:
         yield stack.pop()
 
