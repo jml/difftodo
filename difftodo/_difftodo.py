@@ -69,7 +69,7 @@ def parse_diff(tokens):
             yield filename, line_number, content
 
 
-def _get_line_no(subheading, _matcher=re.compile('@@ -\d+,\d+ [+](\d+),\d+ @@')):
+def _get_line_no(subheading, _matcher=re.compile('@@ -\d+(?:,\d+)? [+](\d+)(?:,\d+)? @@')):
     return int(_matcher.search(subheading).group(1))
 
 
