@@ -1,17 +1,11 @@
 # difftodo
 
-When I work on code, I tend to litter it with XXX, TODO, and FIXME comments.
-Most of the time, I want to fix these comments before I submit my patch for
-review.
+Do you litter your code with `XXX`, `TODO`, and `FIXME` comments? Would you
+like to actually _do_ those TODOs and _fix_ those FIXMEs? If so, `difftodo`
+can help.
 
-This little utility:
-
- 1. Finds all the comments you've edited or added with 'XXX' or 'TODO' in them
- 2. Displays the output in a nice, human-readable way
-
-Further, difftodo provides support for formatting the 'todos' in Emacs
-compiler error style, so that you can easily jump to any outstanding comments
-you've marked in your code.
+`difftodo` finds all the comments you've edited or added that are marked with
+`XXX` or `TODO` and then displays the output in a nice, human-readable way.
 
 ## How to use it
 
@@ -19,29 +13,13 @@ you've marked in your code.
 
     diff -u base.py changed.py | difftodos
 
+### What do I need to do before merging this git branch?
 
-## What's supported
-
-### Languages
-
-Why do we have supported languages? Because we want to identify comments, and
-for our output, we want to strip out the syntactic markers for comments so
-that the resulting output is easier to read.
-
-* Python
-
-### Editors & IDEs
-
-It's good to be able to get a list of things to do right in your coding
-environment, so you can jump straight to the thing that needs to be done.
-
-* Emacs
+    git diff master | difftodos
 
 
-## Dependency notes
+## Dependencies
 
-We're porting this project to make better use of current Python packaging
-technology. In the meantime, you should be aware that we depend on:
-
-* bzr (for diff parsing)
+* [Pygments](http://pygments.org/) (wonderful library, we use it to parse
+  diffs and every programming language under the sun)
 * testtools (for testing)
