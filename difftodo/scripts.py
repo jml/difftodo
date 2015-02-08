@@ -21,8 +21,6 @@ from difftodo._difftodo import (
     parse_diff,
 )
 
-# XXX: Allow customization of TODO tags.
-
 
 def human_format(todos, output):
     counter = 0
@@ -39,14 +37,21 @@ def human_format_todo((filename, line_no, col, comment), output):
     output.write('\n')
 
 
-def comments_from_diff(content):
+def iter_diff_todos(content, tags):
     # XXX: Called from todos_from_diff script. Currently a quick-and-dirty
     # hack used for rough-and-ready integration testing.
     for filename, line_no, chunk in parse_diff(lex_diff(content)):
         for line, col, comment in get_new_comments(filename, line_no, chunk):
-            yield filename, line, col, comment
+            if not tags or any(tag in comment for tag in tags):
+                yield filename, line, col, comment
+
+
+def diff_todo(input_stream, output_stream, formatter, tags):
+    # XXX: Loads everything into memory
+    formatter(iter_diff_todos(input_stream.read(), tags), output_stream)
 
 
 def todos_from_diff():
-    data = sys.stdin.read()
-    human_format(comments_from_diff(data), sys.stdout)
+    # XXX: Allow customization of TODO tags.
+    tags = ('XXX', 'FIXME', 'TODO')
+    diff_todo(sys.stdin, sys.stdout, human_format, tags)
