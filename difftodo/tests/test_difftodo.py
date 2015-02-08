@@ -276,6 +276,22 @@ class TestGetComments(TestCase):
         self.assertEqual(
             [(1, 8, '# This is a comment.')], list(get_comments('foo.py', 1, code)))
 
+    def test_all_comments(self):
+        code = """
+        # This is a comment.
+        x = 1
+        # This is another.
+        x = 2
+        # Final comment:
+        # spans lines
+        x = 3
+        """
+        self.assertEqual(
+            [(1, 8, u'# This is a comment.'),
+             (3, 8, u'# This is another.'),
+             (5, 8, u'# Final comment:\n# spans lines')],
+            list(get_comments('foo.py', 1, code)))
+
     def test_non_python_comments(self):
         code = "/* This is also a comment */"
         self.assertEqual(

@@ -119,7 +119,7 @@ def _get_inserted_lines(diff, starting_line):
             yield line, line + len(content.splitlines())
 
 
-# filename, line_number, str -> [(filename, line_number, str)]
+# filename, line_number, str -> [(line_number, col, str)]
 def get_comments(filename, line_no, code):
     buffered_comments = []
     for comment in _iter_comments(filename, line_no, code):
@@ -129,7 +129,7 @@ def get_comments(filename, line_no, code):
                 buffered_comments.append(comment)
             else:
                 yield _combine_buffered_comments(buffered_comments)
-                buffered_comments = []
+                buffered_comments = [comment]
         else:
             # If it's multi-line, we can trust that the lexer has correctly
             # combined things.
