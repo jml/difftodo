@@ -106,7 +106,7 @@ def _get_new_content(chunk_content):
 # filename, line_number, str -> [(filename, line_number, str)]
 def get_comments(filename, line_no, code):
     buffered_comments = []
-    for comment in _get_comments(filename, line_no, code):
+    for comment in _iter_comments(filename, line_no, code):
         if buffered_comments:
             last = buffered_comments[-1]
             if _is_continuation(last, comment):
@@ -138,7 +138,7 @@ def _combine_buffered_comments(comments):
     return first[0], first[1], content
 
 
-def _get_comments(filename, line_no, code):
+def _iter_comments(filename, line_no, code):
     for line, col, token, content in annotate(_lex_code(filename, code), line_no):
         if token in Token.Comment:
             yield line, col, token, content
