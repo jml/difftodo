@@ -139,30 +139,30 @@ class TestParseDiff(TestCase):
         # - given the new content, load it from the file on disk
         expected = [
             ('.gitignore', 1, [
-                (Token.Generic.Inserted, '.env/\n'),
+                (Token.Generic.Inserted, '+.env/\n'),
                 (Token.Text,
-                 '*.pyc\n'
-                 '/_trial_temp/\n'
-                 '/difftodo.egg-info/\n'
+                 ' *.pyc\n'
+                 ' /_trial_temp/\n'
+                 ' /difftodo.egg-info/\n'
                 ),
             ]),
             # XXX: Throws away extra diff chunk header info
             ('difftodo/_difftodo.py', 26, [
                 (Token.Text,
-                 '\n'
-                 'from extensions import filter_none\n'
-                 '\n'
+                 ' \n'
+                 ' from extensions import filter_none\n'
+                 ' \n'
                 ),
                 (Token.Generic.Inserted,
-                 '# A comment\n'
-                 '\n'
-                 '# XXX: Use Pygments to do all of our lexing for us.\n'
-                 '\n'
+                 '+# A comment\n'
+                 '+\n'
+                 '+# XXX: Use Pygments to do all of our lexing for us.\n'
+                 '+\n'
                 ),
                 (Token.Text,
-                 '\n'
-                 'class Comment(object):\n'
-                 '    """A comment block in a Python source file."""\n'
+                 ' \n'
+                 ' class Comment(object):\n'
+                 '     """A comment block in a Python source file."""\n'
                 ),
             ]),
         ]
@@ -180,12 +180,12 @@ class TestParseDiff(TestCase):
         expected = [
             ('a', 9, [
                 (Token.Text,
-                    '        # Line 1\n'
-                    '        # Line 2\n'
-                    '        # Line 3\n'
+                    '         # Line 1\n'
+                    '         # Line 2\n'
+                    '         # Line 3\n'
                 ),
-                (Token.Generic.Inserted, '        # Line 4\n'),
-                (Token.Text, '        pass\n'),
+                (Token.Generic.Inserted, '+        # Line 4\n'),
+                (Token.Text, '         pass\n'),
             ]),
         ]
         self.assertEqual(expected, list(parse_diff(tokens)))
@@ -197,12 +197,12 @@ class TestNewContent(TestCase):
         parsed = [
             (u'a', 6, [
                 (Token.Text,
-                    u'class TestBar(unittest.TestCase):\n'
-                    u'\n'
-                    u'    def test_bar(self):\n'),
+                    u' class TestBar(unittest.TestCase):\n'
+                    u' \n'
+                    u'     def test_bar(self):\n'),
                 (Token.Generic.Deleted,
-                    u'        # This test is going to be awesome.\n'),
-                (Token.Text, u'pass\n'),
+                    u'-        # This test is going to be awesome.\n'),
+                (Token.Text, u' pass\n'),
             ]),
         ]
         expected = []
@@ -212,20 +212,20 @@ class TestNewContent(TestCase):
         parsed = [
             (u'a', 6, [
                 (Token.Text,
-                    u'class TestBar(unittest.TestCase):\n'
-                    u'\n'
-                    u'    def test_bar(self):\n'),
+                    u' class TestBar(unittest.TestCase):\n'
+                    u' \n'
+                    u'     def test_bar(self):\n'),
                 (Token.Generic.Deleted,
-                    u'        # This test is going to be awesome.\n'),
+                    u'-        # This test is going to be awesome.\n'),
                 (Token.Text, u'pass\n')]),
             (u'a', 20, [
                 (Token.Text,
-                    u'class TestFoo(unittest.TestCase):\n'
-                    u'\n'
-                    u'    def test_foo(self):\n'),
+                    u' class TestFoo(unittest.TestCase):\n'
+                    u' \n'
+                    u'     def test_foo(self):\n'),
                 (Token.Generic.Inserted,
-                    u'        # This is the real awesome.\n'),
-                (Token.Text, u'pass\n')]),
+                    u'+        # This is the real awesome.\n'),
+                (Token.Text, u' pass\n')]),
         ]
         expected = [
             (u'a', 20,
@@ -241,14 +241,15 @@ class TestNewContent(TestCase):
         parsed = [
             (u'a', 6, [
                 (Token.Text,
-                 u'class TestBar(unittest.TestCase):\n'
-                 u'\n'
-                 u'    def test_bar(self):\n'),
+                 u' class TestBar(unittest.TestCase):\n'
+                 u' \n'
+                 u'     def test_bar(self):\n'),
                 (Token.Generic.Deleted,
-                 u'        # This test is going to be awesome.\n'),
+                 u'-        # This test is going to be awesome.\n'),
                 (Token.Generic.Inserted,
-                 u'        # This test is awesome.\n'),
-                (Token.Text, u'pass\n')]),
+                 u'+        # This test is awesome.\n'),
+                (Token.Text,
+                 u' pass\n')]),
         ]
         expected = [
             (u'a', 6,

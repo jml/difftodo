@@ -47,7 +47,7 @@ def _parse_diff(tokens):
             if token == Token.Generic.Subheading:
                 chunk.append((_get_line_no(content), []))
             elif chunk:
-                chunk[-1][1].append((token, _get_lines(content)))
+                chunk[-1][1].append((token, content))
             else:
                 pass
         else:
@@ -80,19 +80,21 @@ def _get_filename(header):
     raise ValueError("Couldn't extract filename from heading: {}".format(header))
 
 
-def _get_lines(content):
-    # Get rid of the '+', '-', ' ' prefix that diff lines have
-    return ''.join(line[1:] for line in content.splitlines(True))
-
-
 def get_new_content(parsed_diff):
     for filename, line_no, content in parsed_diff:
-        if Token.Generic.Inserted in (t[0] for t in content):
-            new_content = StringIO.StringIO()
-            for t, c in content:
-                if t != Token.Generic.Deleted:
-                    new_content.write(c)
-            yield filename, line_no, new_content.getvalue()
+        if _contains_insert(content):
+            yield filename, line_no, ''.join(_get_new_content(content))
+
+
+def _contains_insert(chunk_content):
+    return Token.Generic.Inserted in (t[0] for t in chunk_content)
+
+
+def _get_new_content(chunk_content):
+    for token, content in chunk_content:
+        if token != Token.Generic.Deleted:
+            for line in content.splitlines(True):
+                yield line[1:]
 
 
 # XXX: We've got one major problem:
