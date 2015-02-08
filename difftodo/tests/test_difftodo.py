@@ -208,6 +208,34 @@ class TestParseDiff(TestCase):
         ]
         self.assertEqual(expected, list(parse_diff(tokens)))
 
+    def test_subheading_no_chunk_length(self):
+        # Sometimes subheadings don't have a chunk length, e.g.
+        #   @@ -1 +1 @@
+        #
+        # As opposed to:
+        #   @@ -1,3 +1,4 @@
+        tokens = [
+            (Token.Generic.Heading,
+             u'diff --git a/version.txt b/version.txt\nindex 6207c74..d78c785 100644\n'),
+            (Token.Generic.Deleted, u'--- a/version.txt\n'),
+            (Token.Generic.Inserted, u'+++ b/version.txt\n'),
+            (Token.Generic.Subheading, u'@@ -1 +1 @@\n'),
+            (Token.Generic.Deleted, u'-v0.13.0-0-gf4d2787\n'),
+            (Token.Text, u'\\ No newline at end of file\n'),
+            (Token.Generic.Inserted, u'+v0.13.0-2-g676934f\n'),
+            (Token.Text, u'\\ No newline at end of file\n        \n'),
+        ]
+        expected = [
+            ('version.txt', 1,
+             [
+                 (Token.Generic.Deleted, u'-v0.13.0-0-gf4d2787\n'),
+                 (Token.Text, u'\\ No newline at end of file\n'),
+                 (Token.Generic.Inserted, u'+v0.13.0-2-g676934f\n'),
+                 (Token.Text, u'\\ No newline at end of file\n        \n'),
+             ]),
+        ]
+        self.assertEqual(expected, list(parse_diff(tokens)))
+
 
 class TestNewContent(TestCase):
 
