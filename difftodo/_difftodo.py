@@ -24,12 +24,14 @@ from pygments import lexers
 from pygments.token import Token
 
 
+# bytestring -> [(Token, str)]
 def lex_diff(text):
     lexer = lexers.get_lexer_by_name('diff')
     lexer.add_filter('tokenmerge')
     return pygments.lex(text, lexer)
 
 
+# [(Token, str)] -> [(filename, [(line_number, [(Token, [line])])])]
 def parse_diff(tokens):
     # XXX: This is actually a parser. Maybe write a proper parse and separate
     # out the new content bit.
@@ -70,6 +72,7 @@ def _get_filename(header):
 
 
 def _get_lines(content):
+    # Get rid of the '+', '-', ' ' prefix that diff lines have
     return [line[1:] for line in content.splitlines()]
 
 
@@ -89,10 +92,11 @@ def get_new_content(parsed_diff):
 
 # XXX: We've got one major problem:
 #
-#  2. Comments that appear in a chunk that has insertion are treated as todos,
-#  when we really only want comments that themselves have been modified.
+# Comments that appear in a chunk that has insertion are treated as todos,
+# when we really only want comments that themselves have been modified.
 
 
+# filename, line_number, str -> [(filename, line_number, str)]
 def get_comments(filename, line_no, code):
     buffered_comments = []
     for comment in _get_comments(filename, line_no, code):
@@ -142,6 +146,7 @@ def _lex_code(filename, code):
 
 
 # XXX: Untested
+# [(Token, str)] -> [(line_number, column_number, Token, str)]
 def annotate(tokens, starting_line=1, starting_column=0):
     line = starting_line
     col = starting_column
