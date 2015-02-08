@@ -41,7 +41,7 @@ setup(
         ],
     entry_points = {
         'console_scripts': [
-            'difftodos = difftodo.scripts:todos_from_diff',
+            'diff-todo = difftodo.scripts:todos_from_diff',
         ]
     }
 )
