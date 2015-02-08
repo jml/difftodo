@@ -18,6 +18,7 @@ __all__ = [
 ]
 
 import re
+import StringIO
 
 import pygments
 from pygments import lexers
@@ -87,11 +88,11 @@ def _get_lines(content):
 def get_new_content(parsed_diff):
     for filename, line_no, content in parsed_diff:
         if Token.Generic.Inserted in (t[0] for t in content):
-            new_content = []
+            new_content = StringIO.StringIO()
             for t, c in content:
                 if t != Token.Generic.Deleted:
-                    new_content.extend(c.splitlines())
-            yield filename, line_no, new_content
+                    new_content.write(c)
+            yield filename, line_no, new_content.getvalue()
 
 
 # XXX: We've got one major problem:

@@ -228,12 +228,12 @@ class TestNewContent(TestCase):
                 (Token.Text, u'pass\n')]),
         ]
         expected = [
-            (u'a', 20, [
-                u'class TestFoo(unittest.TestCase):',
-                u'',
-                u'    def test_foo(self):',
-                u'        # This is the real awesome.',
-                u'pass']),
+            (u'a', 20,
+             u'class TestFoo(unittest.TestCase):\n'
+             u'\n'
+             u'    def test_foo(self):\n'
+             u'        # This is the real awesome.\n'
+             u'pass\n'),
         ]
         self.assertEqual(expected, list(get_new_content(parsed)))
 
@@ -251,12 +251,12 @@ class TestNewContent(TestCase):
                 (Token.Text, u'pass\n')]),
         ]
         expected = [
-            (u'a', 6, [
-                u'class TestBar(unittest.TestCase):',
-                u'',
-                u'    def test_bar(self):',
-                u'        # This test is awesome.',
-                u'pass']),
+            (u'a', 6,
+             u'class TestBar(unittest.TestCase):\n'
+             u'\n'
+             u'    def test_bar(self):\n'
+             u'        # This test is awesome.\n'
+             u'pass\n'),
         ]
         self.assertEqual(expected, list(get_new_content(parsed)))
 
