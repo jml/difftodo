@@ -11,11 +11,19 @@ can help.
 
 ### Extract todos from a diff
 
-    diff -u base.py changed.py | difftodos
+    diff -u base.py changed.py | diff-todo
 
 ### What do I need to do before merging this git branch?
 
-    git diff master | difftodos
+    git diff master | diff-todo
+
+### All todos in a file
+
+    all-todos something.c
+
+### All todos in your checkout
+
+    git ls-files | xargs all-todos
 
 
 ## Dependencies

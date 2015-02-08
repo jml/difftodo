@@ -16,10 +16,14 @@
 import sys
 
 from difftodo._difftodo import (
+    get_comments,
     get_new_comments,
     lex_diff,
     parse_diff,
 )
+
+
+DEFAULT_TAGS = ('XXX', 'FIXME', 'TODO')
 
 
 def human_format(todos, output):
@@ -53,5 +57,17 @@ def diff_todo(input_stream, output_stream, formatter, tags):
 
 def todos_from_diff():
     # XXX: Allow customization of TODO tags.
-    tags = ('XXX', 'FIXME', 'TODO')
-    diff_todo(sys.stdin, sys.stdout, human_format, tags)
+    diff_todo(sys.stdin, sys.stdout, human_format, DEFAULT_TAGS)
+
+
+def iter_all_todos(filenames, tags):
+    for filename in filenames:
+        # XXX: Everything in memory again.
+        data = open(filename, 'r').read()
+        for line_no, col_no, comment in get_comments(filename, 1, data):
+            if not tags or any(tag in comment for tag in tags):
+                yield filename, line_no, col_no, comment
+
+
+def cmd_all_todos():
+    human_format(iter_all_todos(sys.argv[1:], DEFAULT_TAGS), sys.stdout)
