@@ -23,6 +23,22 @@ from difftodo._difftodo import (
 
 # XXX: Allow customization of TODO tags.
 
+
+def human_format(todos, output):
+    counter = 0
+    for todo in todos:
+        human_format_todo(todo, output)
+        counter += 1
+        output.write('\n')
+    output.write("Things to do: {}\n".format(counter))
+
+
+def human_format_todo((filename, line_no, col, comment), output):
+    output.write('{}:{}:{}:\n'.format(filename, line_no, col))
+    output.write(comment)
+    output.write('\n')
+
+
 def comments_from_diff(content):
     # XXX: Called from todos_from_diff script. Currently a quick-and-dirty
     # hack used for rough-and-ready integration testing.
@@ -33,8 +49,4 @@ def comments_from_diff(content):
 
 def todos_from_diff():
     data = sys.stdin.read()
-    for filename, line_no, col, comment in comments_from_diff(data):
-        print '{}:{}:{}:'.format(filename, line_no, col)
-        print comment
-        print
-
+    human_format(comments_from_diff(data), sys.stdout)
