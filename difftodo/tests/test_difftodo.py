@@ -340,6 +340,20 @@ class TestGetNewComments(TestCase):
         self.assertEqual(
             [(4, 8, '# This test is going to be awesome.')], list(new_comments))
 
+    def test_later_insertion(self):
+        diff = [
+            (Token.Text,
+             u' class TestBar(unittest.TestCase):\n'
+             u' \n'
+             u'     def test_bar(self):\n'),
+            (Token.Generic.Inserted,
+             u'+        # This test is going to be awesome.\n'),
+            (Token.Text, u' pass\n'),
+        ]
+        new_comments = get_new_comments('test_bar.py', 10, diff)
+        self.assertEqual(
+            [(13, 8, '# This test is going to be awesome.')], list(new_comments))
+
     def test_exclude_unchanged_comments(self):
         diff = [
             (Token.Text,

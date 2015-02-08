@@ -16,8 +16,7 @@
 import sys
 
 from difftodo._difftodo import (
-    get_comments,
-    get_new_content,
+    get_new_comments,
     lex_diff,
     parse_diff,
 )
@@ -27,13 +26,14 @@ from difftodo._difftodo import (
 def comments_from_diff(content):
     # XXX: Called from todos_from_diff script. Currently a quick-and-dirty
     # hack used for rough-and-ready integration testing.
-    for filename, line_no, chunk in get_new_content(parse_diff(lex_diff(content))):
-        for line, col, comment in get_comments(filename, line_no, chunk):
+    for filename, line_no, chunk in parse_diff(lex_diff(content)):
+        for line, col, comment in get_new_comments(filename, line_no, chunk):
             yield filename, line, col, comment
 
 
 def todos_from_diff():
-    for filename, line_no, col, comment in comments_from_diff(sys.stdin.read()):
+    data = sys.stdin.read()
+    for filename, line_no, col, comment in comments_from_diff(data):
         print '{}:{}:{}:'.format(filename, line_no, col)
         print comment
         print

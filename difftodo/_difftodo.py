@@ -102,7 +102,7 @@ def _get_new_content(chunk_content):
 def get_new_comments(filename, line_no, diff):
     comments = get_comments(filename, line_no, ''.join(_get_new_content(diff)))
     comment_end = -1
-    for insert_start, insert_end in _get_inserted_lines(diff):
+    for insert_start, insert_end in _get_inserted_lines(diff, line_no):
         while not comment_end > insert_start:
             comment_start, col, comment = comments.next()
             comment_end = comment_start + len(comment.splitlines())
@@ -113,8 +113,8 @@ def get_new_comments(filename, line_no, diff):
             comment_end = comment_start + len(comment.splitlines())
 
 
-def _get_inserted_lines(diff):
-    for line, col, token, content in annotate(diff):
+def _get_inserted_lines(diff, starting_line):
+    for line, col, token, content in annotate(diff, starting_line):
         if token == Token.Generic.Inserted:
             yield line, line + len(content.splitlines())
 
