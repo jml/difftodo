@@ -34,16 +34,18 @@ def lex_diff(text):
 
 # [(Token, str)] -> [(filename, [(line_number, [(Token, [line])])])]
 def _parse_diff(tokens):
-    # XXX: This is actually a parser. Maybe write a proper parse and separate
-    # out the new content bit.
+    # XXX: This is actually a parser. Maybe swap this out for someone else's
+    # better mainatained parser (unidiff?).
 
     # XXX: Heavily biased toward new content.
     stack = []
     for (token, content) in tokens:
         if token == Token.Generic.Heading:
-            if stack:
-                yield stack.pop()
-            stack.append((_get_filename(content), []))
+            filename = _get_filename(content)
+            if filename:
+                if stack:
+                    yield stack.pop()
+                stack.append((filename, []))
         elif stack:
             chunk = stack[-1][1]
             if token == Token.Generic.Subheading:
@@ -51,6 +53,7 @@ def _parse_diff(tokens):
             elif chunk:
                 chunk[-1][1].append((token, content))
             else:
+                # We ignore any tokens that don't appear after a subheading.
                 pass
         else:
             pass
@@ -79,7 +82,7 @@ def _get_filename(header):
         match = matcher.search(header)
         if match:
             return match.group(1)
-    raise ValueError("Couldn't extract filename from heading: {}".format(header))
+    return None
 
 
 def get_new_content(parsed_diff):

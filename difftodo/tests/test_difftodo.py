@@ -169,6 +169,23 @@ class TestParseDiff(TestCase):
         ]
         self.assertEqual(expected, list(parse_diff(tokens)))
 
+    def test_git_add(self):
+        tokens = [
+            (Token.Generic.Heading, u'diff --git a/example.py b/example.py\n'),
+            (Token.Text, u'new file mode 100644\n'),
+            (Token.Generic.Heading, u'index 0000000..3edf921\n'),
+            (Token.Generic.Deleted, u'--- /dev/null\n'),
+            (Token.Generic.Inserted, u'+++ b/example.py\n'),
+            (Token.Generic.Subheading, u'@@ -0,0 +1,3 @@\n'),
+            (Token.Generic.Inserted, u'+\n+# XXX: this is a todo\n+\n'),
+        ]
+        expected = [
+            ('example.py', 1, [
+                (Token.Generic.Inserted, u'+\n+# XXX: this is a todo\n+\n'),
+            ]),
+        ]
+        self.assertEqual(expected, list(parse_diff(tokens)))
+
     def test_bzr_diff(self):
         tokens = [
             (Token.Generic.Heading, u"=== modified file 'a'\n"),
