@@ -309,3 +309,13 @@ class TestGetComments(TestCase):
         self.assertEqual(
             [(1, 0, '# This is a single comment\n# that spans two\n# or three lines.')],
             list(get_comments('foo.py', 1, code)))
+
+    def test_multiple_c_style_comments(self):
+        code = """\
+/* This is one comment */
+/* This is another */
+        """
+        self.assertEqual(
+            [(1, 0, '/* This is one comment */'),
+             (2, 0, '/* This is another */')],
+            list(get_comments('foo.c', 1, code)))

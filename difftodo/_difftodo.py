@@ -104,7 +104,12 @@ def get_comments(filename, line_no, code):
                 yield _combine_buffered_comments(buffered_comments)
                 buffered_comments = []
         else:
-            buffered_comments.append(comment)
+            # If it's multi-line, we can trust that the lexer has correctly
+            # combined things.
+            if comment[2] == Token.Comment.Multiline:
+                yield comment[0], comment[1], comment[3]
+            else:
+                buffered_comments.append(comment)
 
     if buffered_comments:
         yield _combine_buffered_comments(buffered_comments)
@@ -112,6 +117,7 @@ def get_comments(filename, line_no, code):
 
 def _is_continuation(last, comment):
     return comment[0] == last[0] + 1 and comment[1] == last[1] and comment[2] == last[2]
+
 
 def _combine_buffered_comments(comments):
     if not comments:
