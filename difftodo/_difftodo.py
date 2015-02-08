@@ -81,7 +81,7 @@ def _get_filename(header):
 
 def _get_lines(content):
     # Get rid of the '+', '-', ' ' prefix that diff lines have
-    return [line[1:] for line in content.splitlines()]
+    return ''.join(line[1:] for line in content.splitlines(True))
 
 
 def get_new_content(parsed_diff):
@@ -90,7 +90,7 @@ def get_new_content(parsed_diff):
             new_content = []
             for t, c in content:
                 if t != Token.Generic.Deleted:
-                    new_content.extend(c)
+                    new_content.extend(c.splitlines())
             yield filename, line_no, new_content
 
 
