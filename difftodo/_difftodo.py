@@ -32,7 +32,7 @@ def lex_diff(text):
 
 
 # [(Token, str)] -> [(filename, [(line_number, [(Token, [line])])])]
-def parse_diff(tokens):
+def _parse_diff(tokens):
     # XXX: This is actually a parser. Maybe write a proper parse and separate
     # out the new content bit.
     stack = []
@@ -53,6 +53,14 @@ def parse_diff(tokens):
             pass
     while stack:
         yield stack.pop()
+
+
+# [(Token, str)] -> [(filename, line_number, [(Token, str)])]
+def parse_diff(tokens):
+    # XXX: Maybe we can kill off _parse_diff later.
+    for filename, chunks in _parse_diff(tokens):
+        for line_number, content in chunks:
+            yield filename, line_number, content
 
 
 def _get_line_no(subheading, _matcher=re.compile('@@ -\d+,\d+ [+](\d+),\d+ @@')):
@@ -77,17 +85,13 @@ def _get_lines(content):
 
 
 def get_new_content(parsed_diff):
-    for filename, chunks in parsed_diff:
-        new_chunks = []
-        for line_no, content in chunks:
-            if Token.Generic.Inserted in (t[0] for t in content):
-                new_content = []
-                for t, c in content:
-                    if t != Token.Generic.Deleted:
-                        new_content.extend(c)
-                new_chunks.append((line_no, new_content))
-        if new_chunks:
-            yield filename, new_chunks
+    for filename, line_no, content in parsed_diff:
+        if Token.Generic.Inserted in (t[0] for t in content):
+            new_content = []
+            for t, c in content:
+                if t != Token.Generic.Deleted:
+                    new_content.extend(c)
+            yield filename, line_no, new_content
 
 
 # XXX: We've got one major problem:

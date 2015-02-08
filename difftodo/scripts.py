@@ -27,10 +27,9 @@ from difftodo._difftodo import (
 def comments_from_diff(content):
     # XXX: Called from todos_from_diff script. Currently a quick-and-dirty
     # hack used for rough-and-ready integration testing.
-    for filename, chunks in get_new_content(parse_diff(lex_diff(content))):
-        for line_no, chunk in chunks:
-            for line, col, comment in get_comments(filename, line_no, '\n'.join(chunk)):
-                yield filename, line, col, comment
+    for filename, line_no, chunk in get_new_content(parse_diff(lex_diff(content))):
+        for line, col, comment in get_comments(filename, line_no, '\n'.join(chunk)):
+            yield filename, line, col, comment
 
 
 def todos_from_diff():

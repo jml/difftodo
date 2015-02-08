@@ -138,35 +138,33 @@ class TestParseDiff(TestCase):
         # - infer the contents of the new file from the diff
         # - given the new content, load it from the file on disk
         expected = [
-            ('.gitignore',
-             [(1, [
-                 (Token.Generic.Inserted, ['.env/']),
-                 (Token.Text, [
-                     '*.pyc',
-                     '/_trial_temp/',
-                     '/difftodo.egg-info/'
-                 ]),
-             ])]),
-            ('difftodo/_difftodo.py',
-             # XXX: Throws away extra diff chunk header info
-             [(26, [
-                 (Token.Text, [
-                     '',
-                     'from extensions import filter_none',
-                     '',
-                 ]),
-                 (Token.Generic.Inserted, [
-                     '# A comment',
-                     '',
-                     '# XXX: Use Pygments to do all of our lexing for us.',
-                     '',
-                 ]),
-                 (Token.Text, [
-                     '',
-                     'class Comment(object):',
-                     '    """A comment block in a Python source file."""',
-                 ]),
-             ])]),
+            ('.gitignore', 1, [
+                (Token.Generic.Inserted, ['.env/']),
+                (Token.Text, [
+                    '*.pyc',
+                    '/_trial_temp/',
+                    '/difftodo.egg-info/'
+                ]),
+            ]),
+            # XXX: Throws away extra diff chunk header info
+            ('difftodo/_difftodo.py', 26, [
+                (Token.Text, [
+                    '',
+                    'from extensions import filter_none',
+                    '',
+                ]),
+                (Token.Generic.Inserted, [
+                    '# A comment',
+                    '',
+                    '# XXX: Use Pygments to do all of our lexing for us.',
+                    '',
+                ]),
+                (Token.Text, [
+                    '',
+                    'class Comment(object):',
+                    '    """A comment block in a Python source file."""',
+                ]),
+            ]),
         ]
         self.assertEqual(expected, list(parse_diff(tokens)))
 
@@ -180,21 +178,19 @@ class TestParseDiff(TestCase):
             (Token.Generic.Inserted, u'+        # Line 4\n'),
             (Token.Text, u'         pass\n')]
         expected = [
-            ('a',
-             [(9, [
-                 (Token.Text, [
-                     '        # Line 1',
-                     '        # Line 2',
-                     '        # Line 3',
-                 ]),
-                 (Token.Generic.Inserted, [
-                     '        # Line 4',
-                 ]),
-                 (Token.Text, [
-                     '        pass'
-                 ]),
-             ]),
-          ]),
+            ('a', 9, [
+                (Token.Text, [
+                    '        # Line 1',
+                    '        # Line 2',
+                    '        # Line 3',
+                ]),
+                (Token.Generic.Inserted, [
+                    '        # Line 4',
+                ]),
+                (Token.Text, [
+                    '        pass'
+                ]),
+            ]),
         ]
         self.assertEqual(expected, list(parse_diff(tokens)))
 
@@ -203,73 +199,70 @@ class TestNewContent(TestCase):
 
     def test_strip_files_with_only_deletes(self):
         parsed = [
-            (u'a',
-             [(6,
-               [(Token.Text,
-                 [u'class TestBar(unittest.TestCase):',
-                  u'',
-                  u'    def test_bar(self):']),
-                (Token.Generic.Deleted,
-                 [u'        # This test is going to be awesome.']),
-                (Token.Text, [u'pass'])])]),
+            (u'a', 6, [
+                (Token.Text, [
+                    u'class TestBar(unittest.TestCase):',
+                    u'',
+                    u'    def test_bar(self):']),
+                (Token.Generic.Deleted, [
+                    u'        # This test is going to be awesome.']),
+                (Token.Text, [
+                    u'pass']),
+            ]),
         ]
         expected = []
         self.assertEqual(expected, list(get_new_content(parsed)))
 
     def test_strip_chunks_with_only_deletes(self):
         parsed = [
-            (u'a',
-             [(6,
-               [(Token.Text,
-                 [u'class TestBar(unittest.TestCase):',
-                  u'',
-                  u'    def test_bar(self):']),
-                (Token.Generic.Deleted,
-                 [u'        # This test is going to be awesome.']),
+            (u'a', 6, [
+                (Token.Text, [
+                    u'class TestBar(unittest.TestCase):',
+                    u'',
+                    u'    def test_bar(self):']),
+                (Token.Generic.Deleted, [
+                    u'        # This test is going to be awesome.']),
                 (Token.Text, [u'pass'])]),
-              (20,
-               [(Token.Text,
-                 [u'class TestFoo(unittest.TestCase):',
-                  u'',
-                  u'    def test_foo(self):']),
-                (Token.Generic.Inserted,
-                 [u'        # This is the real awesome.']),
-                (Token.Text, [u'pass'])])
-          ]),
+            (u'a', 20, [
+                (Token.Text, [
+                    u'class TestFoo(unittest.TestCase):',
+                    u'',
+                    u'    def test_foo(self):']),
+                (Token.Generic.Inserted, [
+                    u'        # This is the real awesome.']),
+                (Token.Text, [u'pass'])]),
         ]
         expected = [
-            (u'a',
-             [(20,
-               [u'class TestFoo(unittest.TestCase):',
+            (u'a', 20, [
+                u'class TestFoo(unittest.TestCase):',
                 u'',
                 u'    def test_foo(self):',
                 u'        # This is the real awesome.',
-                u'pass'])])]
+                u'pass']),
+        ]
         self.assertEqual(expected, list(get_new_content(parsed)))
 
     def test_strip_deletes_within_chunk(self):
         parsed = [
-            (u'a',
-             [(6,
-               [(Token.Text,
-                 [u'class TestBar(unittest.TestCase):',
-                  u'',
-                  u'    def test_bar(self):']),
-                (Token.Generic.Deleted,
-                 [u'        # This test is going to be awesome.']),
-                (Token.Generic.Inserted,
-                 [u'        # This test is awesome.']),
+            (u'a', 6, [
+                (Token.Text, [
+                    u'class TestBar(unittest.TestCase):',
+                    u'',
+                    u'    def test_bar(self):']),
+                (Token.Generic.Deleted, [
+                    u'        # This test is going to be awesome.']),
+                (Token.Generic.Inserted, [
+                    u'        # This test is awesome.']),
                 (Token.Text, [u'pass'])]),
-          ]),
         ]
         expected = [
-            (u'a',
-             [(6,
-               [u'class TestBar(unittest.TestCase):',
+            (u'a', 6, [
+                u'class TestBar(unittest.TestCase):',
                 u'',
                 u'    def test_bar(self):',
                 u'        # This test is awesome.',
-                u'pass'])])]
+                u'pass']),
+        ]
         self.assertEqual(expected, list(get_new_content(parsed)))
 
 
