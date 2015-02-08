@@ -87,14 +87,52 @@ def get_new_content(parsed_diff):
             yield filename, new_chunks
 
 
+# XXX: We've got one major problem:
+#
+#  2. Comments that appear in a chunk that has insertion are treated as todos,
+#  when we really only want comments that themselves have been modified.
+
+
 def get_comments(filename, line_no, code):
+    buffered_comments = []
+    for comment in _get_comments(filename, line_no, code):
+        if buffered_comments:
+            last = buffered_comments[-1]
+            if _is_continuation(last, comment):
+                buffered_comments.append(comment)
+            else:
+                yield _combine_buffered_comments(buffered_comments)
+                buffered_comments = []
+        else:
+            buffered_comments.append(comment)
+
+    if buffered_comments:
+        yield _combine_buffered_comments(buffered_comments)
+
+
+def _is_continuation(last, comment):
+    return comment[0] == last[0] + 1 and comment[1] == last[1] and comment[2] == last[2]
+
+def _combine_buffered_comments(comments):
+    if not comments:
+        raise ValueError("Expected multiple comments, got empty list")
+    content = '\n'.join(c[3] for c in comments)
+    first = comments[0]
+    return first[0], first[1], content
+
+
+def _get_comments(filename, line_no, code):
+    for line, col, token, content in annotate(_lex_code(filename, code), line_no):
+        if token in Token.Comment:
+            yield line, col, token, content
+
+
+def _lex_code(filename, code):
     try:
         lexer = lexers.guess_lexer_for_filename(filename, code)
     except pygments.util.ClassNotFound:
-        return
-    for line, col, token, content in annotate(pygments.lex(code, lexer), line_no):
-        if token in Token.Comment:
-            yield line, col, content
+        return iter([])
+    return pygments.lex(code, lexer)
 
 
 # XXX: Untested
@@ -107,6 +145,6 @@ def annotate(tokens, starting_line=1, starting_column=0):
         new_lines = len(lines) - 1
         if new_lines:
             line += new_lines
-            col = 1 + len(lines[-1])
+            col = len(lines[-1])
         else:
             col += len(content)

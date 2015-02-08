@@ -291,4 +291,21 @@ class TestGetComments(TestCase):
         self.assertEqual(
             [(1, 0, '/* This is also a comment */')], list(get_comments('foo.c', 1, code)))
 
-    # XXX: How are we going to combine multi-line comments from Python without combining multiple single comments from C?
+    def test_multi_line_comments(self):
+        code = """\
+        /* This is a comment.
+         *
+         * It spans multiple lines.
+         */
+        """
+        self.assertEqual([(1, 8, code[8:].strip())], list(get_comments('foo.c', 1, code)))
+
+    def test_multi_line_python_comments(self):
+        code = """\
+# This is a single comment
+# that spans two
+# or three lines.
+        """
+        self.assertEqual(
+            [(1, 0, '# This is a single comment\n# that spans two\n# or three lines.')],
+            list(get_comments('foo.py', 1, code)))
