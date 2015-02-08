@@ -29,13 +29,13 @@ def comments_from_diff(content):
     # hack used for rough-and-ready integration testing.
     for filename, chunks in get_new_content(parse_diff(lex_diff(content))):
         for line_no, chunk in chunks:
-            for comment in get_comments(filename, '\n'.join(chunk)):
-                yield filename, line_no, comment
+            for line, col, comment in get_comments(filename, line_no, '\n'.join(chunk)):
+                yield filename, line, col, comment
 
 
 def todos_from_diff():
-    for filename, line_no, comment in comments_from_diff(sys.stdin.read()):
-        print '{}:{}:'.format(filename, line_no)
+    for filename, line_no, col, comment in comments_from_diff(sys.stdin.read()):
+        print '{}:{}:{}:'.format(filename, line_no, col)
         print comment
         print
 

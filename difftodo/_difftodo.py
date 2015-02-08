@@ -87,11 +87,26 @@ def get_new_content(parsed_diff):
             yield filename, new_chunks
 
 
-def get_comments(filename, code):
+def get_comments(filename, line_no, code):
     try:
         lexer = lexers.guess_lexer_for_filename(filename, code)
     except pygments.util.ClassNotFound:
         return
-    for token, content in pygments.lex(code, lexer):
+    for line, col, token, content in annotate(pygments.lex(code, lexer), line_no):
         if token in Token.Comment:
-            yield content
+            yield line, col, content
+
+
+# XXX: Untested
+def annotate(tokens, starting_line=1, starting_column=0):
+    line = starting_line
+    col = starting_column
+    for (token, content) in tokens:
+        yield line, col, token, content
+        lines = content.split('\n')
+        new_lines = len(lines) - 1
+        if new_lines:
+            line += new_lines
+            col = 1 + len(lines[-1])
+        else:
+            col += len(content)

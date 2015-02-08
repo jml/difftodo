@@ -277,17 +277,18 @@ class TestGetComments(TestCase):
 
     def test_empty_code(self):
         code = ''
-        self.assertEqual([], list(get_comments('foo.py', code)))
+        self.assertEqual([], list(get_comments('foo.py', 1, code)))
 
     def test_only_comments(self):
         code = """
         # This is a comment.
         """
-        self.assertEqual(['# This is a comment.'], list(get_comments('foo.py', code)))
+        self.assertEqual(
+            [(1, 8, '# This is a comment.')], list(get_comments('foo.py', 1, code)))
 
     def test_non_python_comments(self):
         code = "/* This is also a comment */"
         self.assertEqual(
-            ['/* This is also a comment */'], list(get_comments('foo.c', code)))
+            [(1, 0, '/* This is also a comment */')], list(get_comments('foo.c', 1, code)))
 
     # XXX: How are we going to combine multi-line comments from Python without combining multiple single comments from C?
