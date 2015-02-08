@@ -28,7 +28,7 @@ Produces this output:
      (Token.Generic.Deleted, u'--- a/difftodo/_difftodo.py\n'),
      (Token.Generic.Inserted, u'+++ b/difftodo/_difftodo.py\n'),
      (Token.Generic.Subheading,
-      u'@@ -26,6 +26,10 @@ from bzrlib import patches\n'),
+      u'@@ -26,6 +26,10 @@ from something import patches\n'),
      (Token.Text, u' \n'),
      (Token.Text, u' from extensions import filter_none\n'),
      (Token.Text, u' \n'),

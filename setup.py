@@ -22,13 +22,13 @@ description = file(os.path.join(os.path.dirname(__file__), 'README.md'), 'rb').r
 
 setup(
     name="difftodo",
-    version="0.0.2",
-    description="Create todo list based on code diffs.",
+    version="1.0.0",
+    description="Create your todo list from code diffs.",
     long_description=description,
     author="Jonathan M. Lange",
     author_email="jml@mumak.net",
     install_requires=[
-        "bzr",
+        "pygments",
         ],
     zip_safe=True,
     packages=find_packages('.'),
@@ -41,7 +41,6 @@ setup(
         ],
     entry_points = {
         'console_scripts': [
-            'diffcomments = difftodo.scripts:comments_from_diff',
             'difftodos = difftodo.scripts:todos_from_diff',
         ]
     }

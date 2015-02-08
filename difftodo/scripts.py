@@ -15,16 +15,10 @@
 
 import sys
 
-from bzrlib import patches
-from difftodo import todos_from_comments
+from difftodo._difftodo import get_todos_from_diff
 
 # XXX: Allow customization of TODO tags.
 
 def todos_from_diff():
-    comments = get_comments_from_diff(patches.parse_patches(sys.stdin))
-    tags = ('XXX', 'TODO')
-    number = -1
-    for number, todo in enumerate(todos_from_comments(comments, tags)):
-        print todo
-    print "Things to do: %s" % (number + 1)
+    get_todos_from_diff(sys.stdin.read())
 

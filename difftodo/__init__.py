@@ -13,10 +13,3 @@
 # limitations under the License.
 
 """Diff todo"""
-
-from ._difftodo import (
-    Comment,
-    Todo,
-    todo_from_comment,
-    todos_from_comments,
-)

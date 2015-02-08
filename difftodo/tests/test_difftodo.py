@@ -15,13 +15,10 @@
 
 """Tests for extracting TODOs from comments in Python source code."""
 
-
-from bzrlib import patches
-from bzrlib.tests import TestCase
+from testtools import TestCase
 
 from pygments.token import Token
 
-from difftodo import Comment, Todo, todo_from_comment
 from difftodo._difftodo import (
     get_comments,
     get_new_content,
@@ -294,120 +291,3 @@ class TestGetComments(TestCase):
             ['/* This is also a comment */'], list(get_comments('foo.c', code)))
 
     # XXX: How are we going to combine multi-line comments from Python without combining multiple single comments from C?
-
-class TestComment(TestCase):
-    """Tests for the `Comment` class."""
-
-    def test_construction(self):
-        comment = Comment("foo.py", 42, ["# hahaha\n", "# hohoho\n"])
-        self.assertEqual("foo.py", comment.filename)
-        self.assertEqual(42, comment.start_line)
-        self.assertEqual(["# hahaha\n", "# hohoho\n"], comment.raw_lines)
-
-    def test_equality(self):
-        comment1 = Comment("foo.py", 42, ["# hahaha\n", "# hohoho\n"])
-        comment2 = Comment("foo.py", 42, ["# hahaha\n", "# hohoho\n"])
-        self.assertEqual(comment1, comment2)
-        self.assertEqual(comment2, comment1)
-
-    def test_trailing_filename_discarded(self):
-        comment = Comment("a\t2009-01-17 02:47:31 +0000", 42, ["# foo"])
-        self.assertEqual('a', comment.filename)
-
-    def test_lines(self):
-        # The text attribute gets rid of the hash character and just has the
-        # text.
-        comment = Comment("foo.py", 42, ["# hahaha\n", "# hohoho  \n"])
-        self.assertEqual(["hahaha", "hohoho"], list(comment.lines))
-
-    def test_lines_disregards_pre_comment_indentation(self):
-        comment = Comment("foo.py", 42, ["# hahaha\n", "    # hohoho  \n"])
-        self.assertEqual(["hahaha", "hohoho"], list(comment.lines))
-
-    def test_lines_preserves_post_comment_indentation(self):
-        comment = Comment("foo.py", 42, ["# hahaha\n", "#     hohoho  \n"])
-        self.assertEqual(["hahaha","    hohoho"], list(comment.lines))
-
-    def test_str(self):
-        comment = Comment("foo.py", 42, ["# hahaha\n", "# hohoho\n"])
-        self.assertEqual(
-            ("foo.py:42:\n"
-             "  hahaha\n"
-             "  hohoho\n"), str(comment))
-
-    def test_append(self):
-        comment = Comment("foo.py", 42, ["# hahaha\n"])
-        comment.append("# hohoho\n")
-        self.assertEqual(["# hahaha\n", "# hohoho\n"], comment.raw_lines)
-
-    def test_contains(self):
-        # We can look for text in comments.
-        comment = Comment("foo.py", 42, ["# hahaha\n"])
-        self.assertTrue("ha" in comment)
-        self.assertTrue("# h" not in comment)
-
-
-class TestTodo(TestCase):
-
-    def test_constructor(self):
-        todo = Todo('filename.py', 32, ['XXX: hello', 'bar'])
-        self.assertEqual('filename.py', todo.filename)
-        self.assertEqual(32, todo.start_line)
-        self.assertEqual(['XXX: hello', 'bar'], todo.lines)
-
-    def test_str(self):
-        todo = Todo('filename.py', 32, ['XXX: hello', 'bar'])
-        self.assertEqual('filename.py:32:\n  XXX: hello\n  bar\n', str(todo))
-
-    def test_equality(self):
-        todo1 = Todo('filename.py', 32, ['XXX: hello', 'bar'])
-        todo2 = Todo('filename.py', 32, ['XXX: hello', 'bar'])
-        self.assertEqual(todo2, todo1)
-        self.assertEqual(todo1, todo2)
-
-
-class TestTodoFromComment(TestCase):
-
-    def makeComment(self, comment_text):
-        return Comment(
-            'arbitrary.py', 1, ['# ' + line for line in comment_text])
-
-    def test_no_todos(self):
-        comment = self.makeComment(['hello australia!'])
-        todos = list(todo_from_comment(comment, ['XXX', 'TODO']))
-        self.assertEqual([], todos)
-
-    def test_one_todo(self):
-        comment = self.makeComment(['XXX: hello australia!'])
-        todos = list(todo_from_comment(comment, ['XXX', 'TODO']))
-        self.assertEqual(
-            [Todo(
-                comment.filename, comment.start_line,
-                ['XXX: hello australia!'])], todos)
-
-    def test_one_todo_embedded(self):
-        comment = self.makeComment([
-            'first line',
-            'XXX: hello australia!',
-            'second line'])
-        todos = list(todo_from_comment(comment, ['XXX', 'TODO']))
-        # XXX: Maybe we want to change this so that the todo starts at the
-        # XXX or TODO.
-        self.assertEqual(
-            [Todo(
-                comment.filename, comment.start_line + 1,
-                ['XXX: hello australia!', 'second line'])],
-            todos)
-
-    def test_two_todos(self):
-        comment = self.makeComment([
-            'XXX: first line',
-            'TODO: hello australia!',
-            'second line'])
-        todos = list(todo_from_comment(comment, ['XXX', 'TODO']))
-        # XXX: Maybe we want to change this so that the todo starts at the
-        # XXX or TODO.
-        self.assertEqual(
-            [Todo(comment.filename, comment.start_line, ['XXX: first line']),
-             Todo(comment.filename, comment.start_line + 1,
-                  ['TODO: hello australia!', 'second line']),], todos)

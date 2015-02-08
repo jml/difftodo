@@ -15,11 +15,7 @@
 """A library for extracting TODOs from comments in Python source code."""
 
 __all__ = [
-    'Comment',
-    'Todo',
-    'todo_from_comment',
-    'todos_from_comments',
-    ]
+]
 
 import re
 
@@ -94,112 +90,22 @@ def get_new_content(parsed_diff):
 
 
 def get_comments(filename, code):
-    lexer = lexers.guess_lexer_for_filename(filename, code)
+    try:
+        lexer = lexers.guess_lexer_for_filename(filename, code)
+    except pygments.util.ClassNotFound:
+        return
     for token, content in pygments.lex(code, lexer):
         if token in Token.Comment:
             yield content
 
 
-class Comment(object):
-    """A comment block in a Python source file."""
-
-    def __init__(self, filename, start_line, raw_lines):
-        self.filename = filename.split('\t')[0]
-        self.start_line = start_line
-        self.raw_lines = raw_lines
-
-    @classmethod
-    def is_comment(self, line):
-        return line.lstrip().startswith('#')
-
-    def __eq__(self, other):
-        return all([
-            self.filename == other.filename,
-            self.start_line == other.start_line,
-            self.raw_lines == other.raw_lines])
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __repr__(self):
-        return '%s(%r, %s, %s)' % (
-            self.__class__.__name__,
-            self.filename,
-            self.start_line,
-            self.raw_lines)
-
-    def __str__(self):
-        lines = ["%s:%s:" % (self.filename, self.start_line)]
-        lines.extend(["  " + line for line in self.lines])
-        lines.append('')
-        return '\n'.join(lines)
-
-    def __contains__(self, text):
-        return text in self.text
-
-    def append(self, new_line):
-        self.raw_lines.append(new_line)
-
-    @property
-    def lines(self):
-        return (
-            line.lstrip()[2:].rstrip()
-            for line in self.raw_lines)
-
-    @property
-    def text(self):
-        return '\n'.join(self.lines)
-
-
-class Todo(object):
-
-    def __init__(self, filename, start_line, lines):
-        self.filename = filename
-        self.start_line = start_line
-        self.lines = lines
-
-    def __repr__(self):
-        return '%s(%r, %r, %r)' % (
-            self.__class__.__name__,
-            self.filename, self.start_line, self.lines)
-
-    def __str__(self):
-        lines = ["%s:%s:" % (self.filename, self.start_line)]
-        lines.extend(["  " + line for line in self.lines])
-        lines.append('')
-        return '\n'.join(lines)
-
-    def __eq__(self, other):
-        return all([
-            self.filename == other.filename,
-            self.start_line == other.start_line,
-            self.lines == other.lines])
-
-    def __ne__(self, other):
-        return not (self == other)
-
-
-def todo_from_comment(comment, tags):
-    """Yield all todos hiding in 'comment'."""
-    lines = list(comment.lines)
-    current_todo_start = None
-
-    for offset, line in enumerate(lines):
-        if any(tag in line for tag in tags):
-            if current_todo_start is not None:
-                yield Todo(
-                    comment.filename,
-                    comment.start_line + current_todo_start,
-                    lines[current_todo_start:offset])
-            current_todo_start = offset
-    if current_todo_start is not None:
-        yield Todo(
-            comment.filename,
-            comment.start_line + current_todo_start,
-            lines[current_todo_start:])
-
-
-def todos_from_comments(comments, tags):
-    for comment in comments:
-        for todo in todo_from_comment(comment, tags):
-            yield todo
+def get_todos_from_diff(content):
+    # XXX: Called from todos_from_diff script. Currently a quick-and-dirty
+    # hack used for rough-and-ready integration testing.
+    i = 0
+    for filename, chunks in get_new_content(parse_diff(lex_diff(content))):
+        for line_no, chunk in chunks:
+            for comment in get_comments(filename, '\n'.join(chunk)):
+                i += 1
+                print 'Comment #{}'.format(i)
+                print comment
