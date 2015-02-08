@@ -97,15 +97,3 @@ def get_comments(filename, code):
     for token, content in pygments.lex(code, lexer):
         if token in Token.Comment:
             yield content
-
-
-def get_todos_from_diff(content):
-    # XXX: Called from todos_from_diff script. Currently a quick-and-dirty
-    # hack used for rough-and-ready integration testing.
-    i = 0
-    for filename, chunks in get_new_content(parse_diff(lex_diff(content))):
-        for line_no, chunk in chunks:
-            for comment in get_comments(filename, '\n'.join(chunk)):
-                i += 1
-                print 'Comment #{}'.format(i)
-                print comment
