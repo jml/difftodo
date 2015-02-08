@@ -1,6 +1,6 @@
 
 * [ ] Pluggable output format
-* [ ] Config file / command-line arguments for custom tagging
+* [ ] Config file?
 * [ ] Emacs integration
 * [ ] API documentation
 * [ ] Release!

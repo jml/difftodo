@@ -15,6 +15,8 @@
 
 import sys
 
+import argparse
+
 from difftodo._difftodo import (
     get_comments,
     get_new_comments,
@@ -56,8 +58,15 @@ def diff_todo(input_stream, output_stream, formatter, tags):
 
 
 def todos_from_diff():
-    # XXX: Allow customization of TODO tags.
-    diff_todo(sys.stdin, sys.stdout, human_format, DEFAULT_TAGS)
+    parser = argparse.ArgumentParser(
+        description="Show code todos from a diff, read from STDIN",
+    )
+    parser.add_argument(
+        '--tag', action='append',
+        help="Words in comments that indicate a thing to do")
+    args = parser.parse_args()
+    tags = args.tag if args.tag else DEFAULT_TAGS
+    diff_todo(sys.stdin, sys.stdout, human_format, args.tag)
 
 
 def iter_all_todos(filenames, tags):
@@ -70,4 +79,16 @@ def iter_all_todos(filenames, tags):
 
 
 def cmd_all_todos():
-    human_format(iter_all_todos(sys.argv[1:], DEFAULT_TAGS), sys.stdout)
+    parser = argparse.ArgumentParser(
+        description="Show todos in code",
+    )
+    parser.add_argument(
+        '--tag', action='append',
+        help="Words in comments that indicate a thing to do"
+    )
+    parser.add_argument(
+        'files', type=str, nargs='+',
+        help='Where to look for todos')
+    args = parser.parse_args()
+    tags = args.tag if args.tag else DEFAULT_TAGS
+    human_format(iter_all_todos(args.files, tags), sys.stdout)
