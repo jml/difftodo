@@ -22,6 +22,7 @@ from pygments.token import Token
 from difftodo._difftodo import (
     get_comments,
     get_new_content,
+    get_new_comments,
     lex_diff,
     parse_diff,
 )
@@ -308,3 +309,87 @@ class TestGetComments(TestCase):
             [(1, 0, '/* This is one comment */'),
              (2, 0, '/* This is another */')],
             list(get_comments('foo.c', 1, code)))
+
+
+class TestGetNewComments(TestCase):
+
+    def test_only_deletions(self):
+        diff = [
+            (Token.Text,
+             u' class TestBar(unittest.TestCase):\n'
+             u' \n'
+             u'     def test_bar(self):\n'),
+            (Token.Generic.Deleted,
+             u'-        # This test is going to be awesome.\n'),
+            (Token.Text, u' pass\n'),
+        ]
+        new_comments = get_new_comments('test_bar.py', 1, diff)
+        self.assertEqual([], list(new_comments))
+
+    def test_only_insertion(self):
+        diff = [
+            (Token.Text,
+             u' class TestBar(unittest.TestCase):\n'
+             u' \n'
+             u'     def test_bar(self):\n'),
+            (Token.Generic.Inserted,
+             u'+        # This test is going to be awesome.\n'),
+            (Token.Text, u' pass\n'),
+        ]
+        new_comments = get_new_comments('test_bar.py', 1, diff)
+        self.assertEqual(
+            [(4, 8, '# This test is going to be awesome.')], list(new_comments))
+
+    def test_exclude_unchanged_comments(self):
+        diff = [
+            (Token.Text,
+             u' class TestBar(unittest.TestCase):\n'
+             u' \n'
+             u'     def test_bar(self):\n'
+             u'         # This comment will not appear in output.\n'),
+            (Token.Generic.Inserted,
+             u'+        x = 1 + 2\n'),
+            (Token.Text,
+             u'         self.assertEqual(4, x)\n'),
+        ]
+        new_comments = get_new_comments('test_bar.py', 1, diff)
+        self.assertEqual([], list(new_comments))
+
+    def test_include_appended_comments(self):
+        diff = [
+            (Token.Text,
+             u' class TestBar(unittest.TestCase):\n'
+             u' \n'
+             u'     def test_bar(self):\n'
+             u'         # This comment will appear in output.\n'),
+            (Token.Generic.Inserted,
+             u'+        # Because this line was added.\n'),
+            (Token.Text,
+             u'         self.assertEqual(4, x)\n'),
+        ]
+        new_comments = get_new_comments('test_bar.py', 1, diff)
+        self.assertEqual(
+            [(4, 8,
+              '# This comment will appear in output.\n'
+              '# Because this line was added.')],
+            list(new_comments))
+
+    def test_include_prepended_comments(self):
+        diff = [
+            (Token.Text,
+             u' class TestBar(unittest.TestCase):\n'
+             u' \n'
+             u'     def test_bar(self):\n'),
+            (Token.Generic.Inserted,
+             u'+        # This comment will appear in output.\n'
+             ),
+            (Token.Text,
+             u'         # Because this line was added.\n'
+             u'         self.assertEqual(4, x)\n'),
+        ]
+        new_comments = get_new_comments('test_bar.py', 1, diff)
+        self.assertEqual(
+            [(4, 8,
+              '# This comment will appear in output.\n'
+              '# Because this line was added.')],
+            list(new_comments))

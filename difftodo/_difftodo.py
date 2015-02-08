@@ -36,6 +36,8 @@ def lex_diff(text):
 def _parse_diff(tokens):
     # XXX: This is actually a parser. Maybe write a proper parse and separate
     # out the new content bit.
+
+    # XXX: Heavily biased toward new content.
     stack = []
     for (token, content) in tokens:
         if token == Token.Generic.Heading:
@@ -97,10 +99,24 @@ def _get_new_content(chunk_content):
                 yield line[1:]
 
 
-# XXX: We've got one major problem:
-#
-# Comments that appear in a chunk that has insertion are treated as todos,
-# when we really only want comments that themselves have been modified.
+def get_new_comments(filename, line_no, diff):
+    comments = get_comments(filename, line_no, ''.join(_get_new_content(diff)))
+    comment_end = -1
+    for insert_start, insert_end in _get_inserted_lines(diff):
+        while not comment_end > insert_start:
+            comment_start, col, comment = comments.next()
+            comment_end = comment_start + len(comment.splitlines())
+
+        while comment_start < insert_end:
+            yield comment_start, col, comment
+            comment_start, col, comment = comments.next()
+            comment_end = comment_start + len(comment.splitlines())
+
+
+def _get_inserted_lines(diff):
+    for line, col, token, content in annotate(diff):
+        if token == Token.Generic.Inserted:
+            yield line, line + len(content.splitlines())
 
 
 # filename, line_number, str -> [(filename, line_number, str)]
