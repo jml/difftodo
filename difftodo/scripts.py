@@ -66,7 +66,7 @@ def todos_from_diff():
         help="Words in comments that indicate a thing to do")
     args = parser.parse_args()
     tags = args.tag if args.tag else DEFAULT_TAGS
-    diff_todo(sys.stdin, sys.stdout, human_format, args.tag)
+    diff_todo(sys.stdin, sys.stdout, human_format, tags)
 
 
 def iter_all_todos(filenames, tags):
