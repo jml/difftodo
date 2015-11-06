@@ -18,7 +18,6 @@ __all__ = [
 ]
 
 import re
-import StringIO
 
 import pygments
 from pygments import lexers
@@ -69,7 +68,9 @@ def parse_diff(tokens):
             yield filename, line_number, content
 
 
-def _get_line_no(subheading, _matcher=re.compile('@@ -\d+(?:,\d+)? [+](\d+)(?:,\d+)? @@')):
+def _get_line_no(
+        subheading,
+        _matcher=re.compile('@@ -\d+(?:,\d+)? [+](\d+)(?:,\d+)? @@')):
     return int(_matcher.search(subheading).group(1))
 
 
@@ -77,6 +78,8 @@ _filename_res = map(re.compile, [
     r'b/(.+)\n',
     r'=== modified file \'(.+)\'',
 ])
+
+
 def _get_filename(header):
     for matcher in _filename_res:
         match = matcher.search(header)
@@ -146,7 +149,9 @@ def get_comments(filename, line_no, code):
 
 
 def _is_continuation(last, comment):
-    return comment[0] == last[0] + 1 and comment[1] == last[1] and comment[2] == last[2]
+    return (
+        comment[0] == last[0] + 1
+        and comment[1] == last[1] and comment[2] == last[2])
 
 
 def _combine_buffered_comments(comments):
@@ -158,7 +163,8 @@ def _combine_buffered_comments(comments):
 
 
 def _iter_comments(filename, line_no, code):
-    for line, col, token, content in annotate(_lex_code(filename, code), line_no):
+    annotated = annotate(_lex_code(filename, code), line_no)
+    for line, col, token, content in annotated:
         if token in Token.Comment:
             yield line, col, token, content
 
