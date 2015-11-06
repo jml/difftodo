@@ -22,7 +22,6 @@ from StringIO import StringIO
 from testtools import TestCase
 
 from difftodo.scripts import diff_todo, human_format, DEFAULT_TAGS
-from .sampledata import ISSUE_17_DIFF
 
 
 def get_output_for_diff(diff, tags=DEFAULT_TAGS):
@@ -38,8 +37,28 @@ def get_output_for_diff(diff, tags=DEFAULT_TAGS):
     return output.getvalue()
 
 
+# Diff that failed in https://github.com/jml/difftodo/issues/17
+ISSUE_17_DIFF = ('''\
+diff --git a/flocker/node/agents/blockdevice.py b/flocker/node/agents/blockdevice.py
+index 540fcac..a97d000 100644
+--- a/flocker/node/agents/blockdevice.py
++++ b/flocker/node/agents/blockdevice.py
+@@ -1116,6 +1184,7 @@ class BlockDeviceDeployerLocalState(PClass):
+         These are the only parts of the state that need to be sent to the
+         control service.
+         """
++        # XXX above untested
+         return (self.node_state, self.nonmanifest_datasets)
+''')
+
+
 class TestDiffs(TestCase):
 
     def test_17(self):
-        # XXX: Mystery guest. Consider defactoring.
-        self.assertEqual('', get_output_for_diff(ISSUE_17_DIFF))
+        expected = ('''\
+flocker/node/agents/blockdevice.py:1187:8:
+# XXX above untested
+
+Things to do: 1
+''')
+        self.assertEqual(expected, get_output_for_diff(ISSUE_17_DIFF))

@@ -27,8 +27,6 @@ from difftodo._difftodo import (
     parse_diff,
 )
 
-from .sampledata import ISSUE_17_DIFF
-
 
 class TestLexDiffs(TestCase):
     """Test our ability to lex diffs."""
@@ -110,25 +108,6 @@ index 1618681..cda4adb 100644
              u' \n class Comment(object):\n     """A comment block in a Python source file."""\n')
         ]
         self.assertEqual(expected, self.lex_diff(diff))
-
-    def test_issue_17_diff(self):
-        expected = [
-            (Token.Generic.Heading,
-             u'diff --git a/flocker/node/agents/blockdevice.py '
-             u'b/flocker/node/agents/blockdevice.py\n'
-             u'index 540fcac..a97d000 100644\n'),
-            (Token.Generic.Deleted, u'--- a/flocker/node/agents/blockdevice.py\n'),
-            (Token.Generic.Inserted, u'+++ b/flocker/node/agents/blockdevice.py\n'),
-            (Token.Generic.Subheading,
-             u'@@ -1116,6 +1184,7 @@ class BlockDeviceDeployerLocalState(PClass):\n'),
-            (Token.Text,
-             u'         These are the only parts of the state that need to be sent to the\n'
-             u'         control service.\n'
-             u'         """\n'),
-            (Token.Generic.Inserted, u'+        # XXX above untested\n'),
-            (Token.Text, u'         return (self.node_state, self.nonmanifest_datasets)\n'),
-        ]
-        self.assertEqual(expected, self.lex_diff(ISSUE_17_DIFF))
 
 
 class TestParseDiff(TestCase):
@@ -257,22 +236,6 @@ class TestParseDiff(TestCase):
         ]
         self.assertEqual(expected, list(parse_diff(tokens)))
 
-    def test_issue_17_diff(self):
-        tokens = lex_diff(ISSUE_17_DIFF)
-        expected = [
-            (u'flocker/node/agents/blockdevice.py', 1184,
-             [
-                 (Token.Text,
-                  u'         These are the only parts of the state that need to be sent to the\n'
-                  u'         control service.\n'
-                  u'         """\n'),
-                 (Token.Generic.Inserted, u'+        # XXX above untested\n'),
-                 (Token.Text, u'         return (self.node_state, self.nonmanifest_datasets)\n')
-             ]),
-        ]
-        self.assertEqual(expected, list(parse_diff(tokens)))
-
-
 
 class TestNewContent(TestCase):
 
@@ -344,19 +307,6 @@ class TestNewContent(TestCase):
         ]
         self.assertEqual(expected, list(get_new_content(parsed)))
 
-    def test_issue_17_diff(self):
-        parsed = parse_diff(lex_diff(ISSUE_17_DIFF))
-        expected = [
-            (u'flocker/node/agents/blockdevice.py', 1184,
-             u'        These are the only parts of the state that need to be sent to the\n'
-             u'        control service.\n'
-             u'        """\n'
-             u'        # XXX above untested\n'
-             u'        return (self.node_state, self.nonmanifest_datasets)\n'),
-        ]
-        self.assertEqual(expected, list(get_new_content(parsed)))
-
-
 
 class TestGetComments(TestCase):
 
@@ -421,14 +371,28 @@ class TestGetComments(TestCase):
              (2, 0, '/* This is another */')],
             list(get_comments('foo.c', 1, code)))
 
-    def test_issue_17_diff(self):
-        [(filename, line_no, code)] = get_new_content(parse_diff(lex_diff(ISSUE_17_DIFF)))
-        # XXX: Not actually the line & column we're expecting, but the test
-        # fails nevertheless.
+    def test_ambiguous_context(self):
+        # At least in Python, it's possible for a diff snippet to have an
+        # ambiguous meaning. Here, we have the end of a docstring and the
+        # beginning of some code, the first line of which is a XXX comment.
+        #
+        # However, it could also be interpreted as two syntactically invalid
+        # lines of Python, followed by a docstring that has two lines and is
+        # then never closed.
+        #
+        # It appears that pygments is following the latter interpretation. At
+        # least in this case, we want the former.
+        new_code = ('''\
+These are the only parts of the state that need to be sent to the
+control service.
+"""
+# XXX above untested
+return (self.node_state, self.nonmanifest_datasets)
+''')
         expected = [
-            (0, 0, '# XXX above untested'),
+            (4, 0, '# XXX above untested'),
         ]
-        self.assertEqual(expected, list(get_comments(filename, line_no, code)))
+        self.assertEqual(expected, list(get_comments('foo.py', 1, new_code)))
 
 
 class TestGetNewComments(TestCase):
