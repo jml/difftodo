@@ -25,6 +25,6 @@ index 540fcac..a97d000 100644
          These are the only parts of the state that need to be sent to the
          control service.
          """
-+        # XXX: above untested
++        # XXX above untested
          return (self.node_state, self.nonmanifest_datasets)
 ''')
