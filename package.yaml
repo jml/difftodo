@@ -1,0 +1,53 @@
+name: difftodo
+version: 0.1.0
+synopsis: Generate todo lists from source code
+maintainer: Jonathan M. Lange <jml@mumak.net>
+license: Apache
+github: jml/difftodo
+category: Development
+
+ghc-options: -Wall
+default-extensions:
+  - NoImplicitPrelude
+  - OverloadedStrings
+  - NamedFieldPuns
+  - RecordWildCards
+
+dependencies:
+  - base >= 4.9 && < 5
+  - protolude >= 0.1.5
+  - text
+
+library:
+  source-dirs: src
+  dependencies:
+    - diff-parse
+    - highlighting-kate
+
+executables:
+  diff-todo:
+    main: Main.hs
+    source-dirs: diff-todo
+    dependencies:
+      - bytestring
+      - difftodo
+      - optparse-applicative
+
+executables:
+  all-todos:
+    main: Main.hs
+    source-dirs: all-todos
+    dependencies:
+      - difftodo
+      - optparse-applicative
+
+tests:
+  fixme-tests:
+    main: Main.hs
+    source-dirs: tests
+    dependencies:
+      - bytestring
+      - highlighting-kate
+      - difftodo
+      - tasty
+      - tasty-hunit

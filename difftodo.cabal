@@ -1,0 +1,72 @@
+-- This file has been generated from package.yaml by hpack version 0.13.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           difftodo
+version:        0.1.0
+synopsis:       Generate todo lists from source code
+category:       Development
+homepage:       https://github.com/jml/difftodo#readme
+bug-reports:    https://github.com/jml/difftodo/issues
+maintainer:     Jonathan M. Lange <jml@mumak.net>
+license:        Apache
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+source-repository head
+  type: git
+  location: https://github.com/jml/difftodo
+
+library
+  hs-source-dirs:
+      src
+  default-extensions: NoImplicitPrelude OverloadedStrings NamedFieldPuns RecordWildCards
+  ghc-options: -Wall
+  build-depends:
+      base >= 4.9 && < 5
+    , protolude >= 0.1.5
+    , text
+    , diff-parse
+    , highlighting-kate
+  exposed-modules:
+      Fixme
+      Fixme.Comment
+      Fixme.Diff
+      Fixme.Todo
+  default-language: Haskell2010
+
+executable all-todos
+  main-is: Main.hs
+  hs-source-dirs:
+      all-todos
+  default-extensions: NoImplicitPrelude OverloadedStrings NamedFieldPuns RecordWildCards
+  ghc-options: -Wall
+  build-depends:
+      base >= 4.9 && < 5
+    , protolude >= 0.1.5
+    , text
+    , difftodo
+    , optparse-applicative
+  default-language: Haskell2010
+
+test-suite fixme-tests
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      tests
+  default-extensions: NoImplicitPrelude OverloadedStrings NamedFieldPuns RecordWildCards
+  ghc-options: -Wall
+  build-depends:
+      base >= 4.9 && < 5
+    , protolude >= 0.1.5
+    , text
+    , bytestring
+    , highlighting-kate
+    , difftodo
+    , tasty
+    , tasty-hunit
+  other-modules:
+      Comment
+      Diff
+  default-language: Haskell2010
