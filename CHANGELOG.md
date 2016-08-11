@@ -1,6 +1,21 @@
 # Change log
 
-## 1.0.0 (2015-02-08)
+
+## 0.1.0 (2016-08-11)
+
+Complete rewrite in Haskell. Mostly command-line compatible with Python
+version.
+
+Version numbering has been reset to 0.1.0 in order to communicate the
+instability of the library APIs.
+
+Tags can no longer be specified on the command line.
+
+## Python version
+
+No longer supported. Available at the git tag `python-v1.0.0`.
+
+### 1.0.0 (2015-02-08)
 
 Complete rewrite to use Pygments for diff and code parsing, providing support
 for many, many more languages and allowing `difftodo` to be used with version
@@ -16,6 +31,6 @@ control systems other than Bazaar.
 * Tags (e.g. "FIXME", "XXX", "TODO") can now be specified on the command-line
 * Tests now use `testtools` rather than `bzrlib.tests`
 
-## 0.0.2
+### 0.0.2
 
 bzr- & Python-specific version. No longer supported.

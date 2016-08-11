@@ -25,9 +25,24 @@ can help.
 
     git ls-files | xargs all-todos
 
+## How to build
 
-## Dependencies
+```
+$ cabal configure
+$ cabal build
+$ cabal test
+```
 
-* [Pygments](http://pygments.org/) (wonderful library, we use it to parse
-  diffs and every programming language under the sun)
-* testtools (for testing)
+There's a `shell.nix` file too, if you're into that sort of thing.
+
+## History
+
+This was originally `bzr-todo`, and then became `difftodo`, and then got
+rewritten in Haskell.
+
+## Contributing
+
+I'm very keen to make this better, but I'm also rather busy. Patches & issues
+are welcome, but there's no SLA on replies.
+
+If you find `difftodo` useful, then please let me know.
