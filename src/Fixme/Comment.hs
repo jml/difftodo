@@ -4,6 +4,7 @@ module Fixme.Comment
   , Located
   , parseComments
   , commentText
+  , filename
   , startLine
   , endLine
     -- ** Exposed for testing
@@ -30,15 +31,15 @@ import Text.Highlighting.Kate
 
 
 -- | Given some source code, return a list of comments.
-parseComments :: Language -> Text -> [Comment]
-parseComments language = parseComments' . highlightCode language
+parseComments :: Filename -> Language -> Text -> [Comment]
+parseComments filename language = parseComments' filename . highlightCode language
 
 -- | Given a consecutive sequence of lexed lines of source, return a list of
 -- all the comments found, along with the line number on which the comment
 -- starts.
-parseComments' :: [SourceLine] -> [Comment]
-parseComments' =
-  coalesce appendComment . mapMaybe getComment . locateTokens
+parseComments' :: Filename -> [SourceLine] -> [Comment]
+parseComments' filename =
+  coalesce appendComment . mapMaybe getComment . locateTokens filename
 
   where
     coalesce :: (a -> a -> Maybe a) -> [a] -> [a]
@@ -50,14 +51,19 @@ parseComments' =
 
 
 -- | A thing that is located somewhere in a text file.
-data Located a = Located { startLine :: Int
+data Located a = Located { filename :: Filename
+                         , startLine :: Int
                          , value :: a
                          } deriving (Eq, Show)
 
+-- | How we identify which blob of text a thing is located in.
+type Filename = Maybe Text
+
+
 type LocatedToken = Located Token
 
-locateTokens :: [SourceLine] -> [LocatedToken]
-locateTokens lines = [Located i x | (i, xs) <- zip [0..] lines, x <- xs]
+locateTokens :: Filename -> [SourceLine] -> [LocatedToken]
+locateTokens fn lines = [Located fn i x | (i, xs) <- zip [0..] lines, x <- xs]
 
 
 type Comment = Located Text
@@ -65,23 +71,24 @@ type Comment = Located Text
 commentText :: Comment -> Text
 commentText = value
 
-newComment :: Int -> Text -> Comment
-newComment i text = Located i text
+newComment :: Filename -> Int -> Text -> Comment
+newComment fn i text = Located fn i text
 
 endLine :: Comment -> Int
-endLine (Located startLine c) = startLine + (Text.count "\n" c)
+endLine (Located _ startLine c) = startLine + (Text.count "\n" c)
 
 appendComment :: Comment -> Comment -> Maybe Comment
 appendComment x y
+  | filename x /= filename y = Nothing
   | startLine y - endLine x > 1 = Nothing
-  | startLine y - endLine x == 1 = Just (newComment (startLine x) (commentText x <> "\n" <> commentText y))
-  | otherwise = Just (newComment (startLine x) (commentText x <> commentText y))
+  | startLine y - endLine x == 1 = Just (newComment (filename x) (startLine x) (commentText x <> "\n" <> commentText y))
+  | otherwise = Just (newComment (filename x) (startLine x) (commentText x <> commentText y))
 
 getComment :: LocatedToken -> Maybe Comment
-getComment (Located lineNum token) =
+getComment (Located filename lineNum token) =
   case getComment' token of
     Nothing -> Nothing
-    Just comment -> Just $ Located lineNum comment
+    Just comment -> Just $ Located filename lineNum comment
 
 getComment' :: Token -> Maybe Text
 getComment' (AlertTok, value) = Just (toS value)
