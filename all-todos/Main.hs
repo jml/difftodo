@@ -45,7 +45,7 @@ readComments filename =
     Nothing -> pure Nothing
     Just language -> do
       contents <- readFile filename
-      pure (Just $ Fixme.parseComments language contents)
+      pure (Just $ Fixme.parseComments (Just (toS filename)) language contents)
 
 
 main :: IO ()

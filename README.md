@@ -23,7 +23,14 @@ can help.
 
 ### All todos in your checkout
 
-    git ls-files | xargs all-todos
+```
+$ git ls-files | xargs all-todos
+src/Fixme/Comment.hs:100:
+  -- TODO: Move these to a separate module, maybe.
+
+src/Fixme/Diff.hs:27:
+  -- TODO: Try to use lenses for this.
+```
 
 ## How to build
 

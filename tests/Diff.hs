@@ -30,7 +30,7 @@ tests =
             , "+  , comment"
             , "+  ) where"
             ]
-      let expected = [ newComment 0 "-- | Extract comments from diffs"]
+      let expected = [ newComment (Just "src/Fixme/Diff.hs") 0 "-- | Extract comments from diffs"]
       Right expected @=? newCommentsFromDiff input
   , testCase "Multi-line comment" $ do
       let input = Data.ByteString.Char8.unlines $
@@ -51,6 +51,6 @@ tests =
             , "+  , comment"
             , "+  ) where"
             ]
-      let expected = [ newComment 0 "-- | Extract comments from diffs\n--\n-- Yep."]
+      let expected = [ newComment (Just "src/Fixme/Diff.hs") 0 "-- | Extract comments from diffs\n--\n-- Yep."]
       Right expected @=? newCommentsFromDiff input
   ]

@@ -8,7 +8,7 @@ module Fixme.Todo
 import Protolude
 
 import qualified Data.Text as Text
-import Fixme.Comment (Comment, Located, commentText)
+import Fixme.Comment (Comment, Located, commentText, filename, startLine)
 
 
 type Todo = Located Text
@@ -19,7 +19,12 @@ getTodos comment =
     [comment] else []
 
 formatTodo :: Todo -> Text
-formatTodo = ((<>) "\n") . commentText
+formatTodo todo =
+  fn <> ":" <> lineNum <> ":\n" <> indentedComment
+  where
+    fn = maybe "<unknown>" identity (filename todo)
+    lineNum = show (startLine todo)
+    indentedComment = Text.unlines (map ("  " <>) (Text.lines (commentText todo)))
 
 defaultTags :: [Text]
 defaultTags = [ "XXX"

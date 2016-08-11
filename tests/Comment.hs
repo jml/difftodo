@@ -99,24 +99,24 @@ tests =
                     , []
                     , [(DecValTok,"1"),(NormalTok," "),(OperatorTok,"+"),(NormalTok," "),(DecValTok,"2"),(NormalTok,"  "),(CommentTok,"# trailing comment")]
                     ]
-        let expected = [ newComment 0 "# first comment"
-                       , newComment 2 "# second comment\n# is multi-line"
-                       , newComment 5 "# trailing comment"
+        let expected = [ newComment Nothing 0 "# first comment"
+                       , newComment Nothing 2 "# second comment\n# is multi-line"
+                       , newComment Nothing 5 "# trailing comment"
                        ]
-        expected @=? parseComments' input
+        expected @=? parseComments' Nothing input
     , testCase "Parse indented example" $ do
         let input = [ [(NormalTok," "),(NormalTok," "),(CommentTok,"-- second comment")]
                     , [(NormalTok," "),(NormalTok," "),(CommentTok,"-- is multi-line")]
                     ]
-        let expected = [ newComment 0 "-- second comment\n-- is multi-line" ]
-        expected @=? parseComments' input
+        let expected = [ newComment Nothing 0 "-- second comment\n-- is multi-line" ]
+        expected @=? parseComments' Nothing input
     , testCase "Commented blank line continues comment" $ do
         let input = [ [(CommentTok,"# comment")]
                     , [(CommentTok,"#")]
                     , [(CommentTok,"# is multi-line")]
                     ]
-        let expected = [ newComment 0 "# comment\n#\n# is multi-line" ]
-        expected @=? parseComments' input
+        let expected = [ newComment Nothing 0 "# comment\n#\n# is multi-line" ]
+        expected @=? parseComments' Nothing input
     ]
   , testGroup "Parsing comments from source"
     [ testCase "Multi-line Haskell comment" $ do
@@ -128,8 +128,8 @@ tests =
               , "--"
               , "-- Conclusion"
               ]
-        let expected = [ newComment 0 (stripEnd example) ]
-        expected @=? parseComments "haskell" example
+        let expected = [ newComment Nothing 0 (stripEnd example) ]
+        expected @=? parseComments Nothing "haskell" example
     ]
   ]
 
