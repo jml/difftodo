@@ -76,7 +76,7 @@ $ cabal test
 ```
 
 The Cabal file is generated using `hpack`, and the `default.nix` file is
-generated using `cabal2nix`. If you run `Make`, these two generated files will
+generated using `cabal2nix`. If you run `make`, these two generated files will
 be updated.
 
 ## History
