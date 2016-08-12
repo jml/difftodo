@@ -9,30 +9,65 @@ can help.
 
 ## How to use it
 
-### Extract todos from a diff
+For most things, you just need to run `git todo`.
 
-    diff -u base.py changed.py | diff-todo
+If you've got uncommitted, unstaged changes, `git todo` will show all TODOs
+from those changes.
+
+Otherwise, `git todo` will show all TODOs between your branch and `master`.
 
 ### What do I need to do before merging this git branch?
 
-    git diff master | diff-todo
-
-### All todos in a file
-
-    all-todos something.c
-
-### All todos in your checkout
-
 ```
-$ git ls-files | xargs all-todos
-src/Fixme/Comment.hs:100:
-  -- TODO: Move these to a separate module, maybe.
+$ git todo
+git-todo/Main.hs:62:
+  -- TODO: Take git diff flags as options
 
-src/Fixme/Diff.hs:27:
-  -- TODO: Try to use lenses for this.
+git-todo/Main.hs:73:
+  -- TODO: Read this as a bytestring from the start
+
+git-todo/Main.hs:83:
+  -- TODO: Use gitlib
 ```
 
-## How to build
+### What do I need to do before I can commit this?
+
+```
+$ git todo
+git-todo/Main.hs:90:
+  -- TODO: Factor out todo reporting
+```
+
+### What TODOs are left in my code base?
+
+```
+$ git todo .
+... too many to list here! ...
+```
+
+### Advanced usage
+
+`git todo` tries to do the right thing. If you want more control, then you can
+use the `all-todos` command, which shows all of the TODOs found in a
+particular file.
+
+e.g.
+
+```
+$ all-todos ../src-todo/branch-review.py
+../src-todo/branch-review.py:11:
+  # XXX: Incorporate this into difftodo
+```
+
+You can also use `diff-todo` to extract TODOs from a diff. This is more or
+less how `git todo` works, so if you find yourself wanting a bit more control
+over what `git todo` does you can just use `diff-todo`, e.g.
+
+```
+$ git diff v1.0.1...v1.0.0 | diff-todo
+```
+
+## Building
 
 ```
 $ cabal configure
@@ -40,7 +75,9 @@ $ cabal build
 $ cabal test
 ```
 
-There's a `shell.nix` file too, if you're into that sort of thing.
+The Cabal file is generated using `hpack`, and the `default.nix` file is
+generated using `cabal2nix`. If you run `Make`, these two generated files will
+be updated.
 
 ## History
 

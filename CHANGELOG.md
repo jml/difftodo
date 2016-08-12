@@ -5,6 +5,8 @@
 * Show filename and line number in output of `diff-todo` and `all-todos`.
   Means they can be used as Emacs compile output.
 
+* New `git-todo` command shows todos based on git.
+
 ## 0.1.0 (2016-08-11)
 
 Complete rewrite in Haskell. Mostly command-line compatible with Python
