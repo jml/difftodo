@@ -6,6 +6,7 @@ module Fixme
   ( -- | Get comments from code or from diffs
     Comment.parseComments
   , Diff.newCommentsFromDiff
+  , Comment.readComments
     -- | Turn comments into todos
   , Todo.getTodos
     -- | Format todos

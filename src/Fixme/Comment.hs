@@ -3,6 +3,7 @@ module Fixme.Comment
     Comment
   , Located
   , parseComments
+  , readComments
   , commentText
   , filename
   , startLine
@@ -21,6 +22,8 @@ module Fixme.Comment
 import Protolude
 
 import qualified Data.Text as Text
+import Data.Text.IO (readFile)
+import GHC.IO (FilePath)
 import Text.Highlighting.Kate
   ( SourceLine
   , Token
@@ -48,6 +51,19 @@ parseComments' filename =
         Nothing -> x:(coalesce maybeAppend (y:ys))
         Just z -> (coalesce maybeAppend (z:ys))
     coalesce _ xs = xs
+
+
+-- | Read the given file, and parse out any comments.
+--
+-- Return Nothing if we cannot determine what language the file is in. Raises
+-- exceptions on bad IO, and also if the file cannot be decoded to Text.
+readComments :: FilePath -> IO (Maybe [Comment])
+readComments filename =
+  case languageForFile (toS filename) of
+    Nothing -> pure Nothing
+    Just language -> do
+      contents <- readFile filename
+      pure (Just $ parseComments (Just (toS filename)) language contents)
 
 
 -- | A thing that is located somewhere in a text file.

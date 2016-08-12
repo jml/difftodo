@@ -7,7 +7,6 @@ module Main (main) where
 
 import Protolude
 
-import Data.Text.IO (readFile)
 import GHC.IO (FilePath)
 import Options.Applicative
   ( ParserInfo
@@ -23,7 +22,6 @@ import Options.Applicative
   )
 
 import qualified Fixme
-import Fixme.Comment (Comment, languageForFile)
 
 
 options :: ParserInfo [FilePath]
@@ -39,20 +37,11 @@ options =
       ]
 
 
-readComments :: FilePath -> IO (Maybe [Comment])
-readComments filename =
-  case languageForFile (toS filename) of
-    Nothing -> pure Nothing
-    Just language -> do
-      contents <- readFile filename
-      pure (Just $ Fixme.parseComments (Just (toS filename)) language contents)
-
-
 main :: IO ()
 main = do
   files <- execParser options
   forM_ files $ \filename -> do
-    comments' <- readComments filename
+    comments' <- Fixme.readComments filename
     case comments' of
       Nothing -> pure ()
       Just comments -> do
