@@ -25,6 +25,13 @@ library:
     - highlighting-kate
 
 executables:
+  all-todos:
+    main: Main.hs
+    source-dirs: all-todos
+    dependencies:
+      - difftodo
+      - optparse-applicative
+
   diff-todo:
     main: Main.hs
     source-dirs: diff-todo
@@ -33,13 +40,15 @@ executables:
       - difftodo
       - optparse-applicative
 
-executables:
-  all-todos:
+  git-todo:
     main: Main.hs
-    source-dirs: all-todos
+    source-dirs: git-todo
     dependencies:
       - difftodo
       - optparse-applicative
+      - process
+      - text
+
 
 tests:
   fixme-tests:

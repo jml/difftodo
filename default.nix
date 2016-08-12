@@ -1,5 +1,6 @@
 { mkDerivation, base, bytestring, diff-parse, highlighting-kate
-, optparse-applicative, protolude, stdenv, tasty, tasty-hunit, text
+, optparse-applicative, process, protolude, stdenv, tasty
+, tasty-hunit, text
 }:
 mkDerivation {
   pname = "difftodo";
@@ -11,7 +12,7 @@ mkDerivation {
     base diff-parse highlighting-kate protolude text
   ];
   executableHaskellDepends = [
-    base optparse-applicative protolude text
+    base bytestring optparse-applicative process protolude text
   ];
   testHaskellDepends = [
     base bytestring highlighting-kate protolude tasty tasty-hunit text
