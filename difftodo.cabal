@@ -75,6 +75,7 @@ executable git-todo
       base >= 4.9 && < 5
     , protolude >= 0.1.5
     , text
+    , bytestring
     , difftodo
     , optparse-applicative
     , process

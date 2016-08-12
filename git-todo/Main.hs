@@ -13,12 +13,13 @@
 --
 --     $ git todo <path> <path> ...
 --
--- These paths will recurse.
+-- These paths will recurse, using git ls-files.
 
 module Main (main) where
 
 import Protolude
 
+import qualified Data.ByteString as ByteString
 import qualified Data.Text as Text
 import Data.Text.IO (hPutStrLn)
 import GHC.IO (FilePath)
@@ -59,14 +60,21 @@ options =
 
 commentsFromDiff :: IO [Comment]
 commentsFromDiff = do
-  -- TODO: Read this as a bytestring from the start
   -- TODO: Take git diff flags as options
-  diff <- gitDiff "master..."
+  diff <- loadDiff
   case Fixme.newCommentsFromDiff diff of
     Left e -> do
       hPutStrLn stderr $ "ERROR: " <> e
       exitWith (ExitFailure 1)
     Right comments -> pure comments
+
+  where
+    -- TODO: Read this as a bytestring from the start
+    loadDiff = do
+      d <- gitDiff Nothing
+      if ByteString.null d
+        then gitDiff (Just "master...")
+        else pure d
 
 commentsFromFiles :: [FilePath] -> IO [Comment]
 commentsFromFiles paths = concatMapM (map (maybe [] identity) . Fixme.readComments) =<< gitListFiles paths
@@ -74,8 +82,9 @@ commentsFromFiles paths = concatMapM (map (maybe [] identity) . Fixme.readCommen
 -- TODO: Use gitlib
 
 -- | Run `git diff <diffspec>` in the current working directory.
-gitDiff :: Text -> IO ByteString
-gitDiff diffSpec = toS <$> readProcess "git" ["diff", toS diffSpec] ""
+gitDiff :: Maybe Text -> IO ByteString
+gitDiff (Just diffSpec) = toS <$> readProcess "git" ["diff", toS diffSpec] ""
+gitDiff Nothing = toS <$> readProcess "git" ["diff"] ""
 
 
 -- | Run `git ls-files` with the given files in the current working directory.
