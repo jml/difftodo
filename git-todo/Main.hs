@@ -62,11 +62,13 @@ commentsFromDiff :: IO [Comment]
 commentsFromDiff = do
   -- TODO: Take git diff flags as options
   diff <- loadDiff
-  case Fixme.newCommentsFromDiff diff of
-    Left e -> do
-      hPutStrLn stderr $ "ERROR: " <> e
-      exitWith (ExitFailure 1)
-    Right comments -> pure comments
+  if ByteString.null diff
+    then pure []
+    else case Fixme.newCommentsFromDiff diff of
+           Left e -> do
+             hPutStrLn stderr $ "ERROR: " <> e
+             exitWith (ExitFailure 1)
+           Right comments -> pure comments
 
   where
     -- TODO: Read this as a bytestring from the start
@@ -86,6 +88,9 @@ gitDiff :: Maybe Text -> IO ByteString
 gitDiff (Just diffSpec) = toS <$> readProcess "git" ["diff", toS diffSpec] ""
 gitDiff Nothing = toS <$> readProcess "git" ["diff"] ""
 
+-- TODO: Factor out todo reporting
+
+-- TODO: Kind of slow. About 3.7s on holborn, which has 232 files.
 
 -- | Run `git ls-files` with the given files in the current working directory.
 gitListFiles :: [FilePath] -> IO [FilePath]
