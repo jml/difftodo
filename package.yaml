@@ -21,17 +21,9 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
+    - bytestring
     - diff-parse
     - highlighting-kate
-
-executables:
-  diff-todo:
-    main: Main.hs
-    source-dirs: diff-todo
-    dependencies:
-      - bytestring
-      - difftodo
-      - optparse-applicative
 
 executables:
   all-todos:
@@ -40,6 +32,25 @@ executables:
     dependencies:
       - difftodo
       - optparse-applicative
+
+  diff-todo:
+    main: Main.hs
+    source-dirs: diff-todo
+    dependencies:
+      - bytestring
+      - difftodo
+      - optparse-applicative
+
+  git-todo:
+    main: Main.hs
+    source-dirs: git-todo
+    dependencies:
+      - bytestring
+      - difftodo
+      - optparse-applicative
+      - process
+      - text
+
 
 tests:
   fixme-tests:
