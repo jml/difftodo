@@ -59,16 +59,15 @@ options =
       ]
 
 commentsFromDiff :: IO [Comment]
-commentsFromDiff = do
-  -- TODO: Take git diff flags as options
-  diff <- loadDiff
-  case Fixme.newCommentsFromDiff diff of
-    Left e -> do
-      hPutStrLn stderr $ "ERROR: " <> e
-      exitWith (ExitFailure 1)
-    Right comments -> pure comments
+commentsFromDiff =
+  -- TODO: Take git diff flags as option
+  either abort pure . Fixme.newCommentsFromDiff =<< loadDiff
 
   where
+    abort e = do
+      hPutStrLn stderr $ "ERROR: " <> e
+      exitWith (ExitFailure 1)
+
     -- TODO: Read this as a bytestring from the start
     loadDiff = do
       d <- gitDiff Nothing
@@ -95,11 +94,11 @@ gitDiff diffSpec =
 
 -- TODO: Factor out todo reporting
 
--- TODO: Kind of slow. About 3.7s on holborn, which has 232 files.
+-- TODO: Kind of slow. About 3.7s on a git repo with 232 files.
 
 -- | Run `git ls-files` with the given files in the current working directory.
 gitListFiles :: [FilePath] -> IO [FilePath]
-gitListFiles files = do
+gitListFiles files =
   -- TODO: Don't assume git repo location is CWD
   toLines <$> readProcess "git" ("ls-files":files) ""
   where
