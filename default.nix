@@ -9,7 +9,7 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    base diff-parse highlighting-kate protolude text
+    base bytestring diff-parse highlighting-kate protolude text
   ];
   executableHaskellDepends = [
     base bytestring optparse-applicative process protolude text

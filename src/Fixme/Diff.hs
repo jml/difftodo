@@ -6,6 +6,7 @@ module Fixme.Diff
 
 import Protolude
 
+import qualified Data.ByteString as ByteString
 import qualified Data.Text as Text
 import Text.Diff.Parse (parseDiff)
 import Text.Diff.Parse.Types
@@ -32,8 +33,9 @@ import Fixme.Comment
 -- Silently ignores files if we can't figure out what their programming
 -- language is.
 newCommentsFromDiff :: ByteString -> Either Text [Comment]
-newCommentsFromDiff =
-  bimap toS (join . catMaybes . map getNewCommentsForFile) . parseDiff .toS
+newCommentsFromDiff diff
+  | ByteString.null diff = Right []
+  | otherwise = bimap toS (join . catMaybes . map getNewCommentsForFile) . parseDiff . toS $ diff
   where
     getNewCommentsForFile (FileDelta Deleted _ _ _) = Just []
     getNewCommentsForFile (FileDelta _ _ _ Binary) = Just []

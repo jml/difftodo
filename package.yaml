@@ -21,6 +21,7 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
+    - bytestring
     - diff-parse
     - highlighting-kate
 

@@ -67,6 +67,23 @@ over what `git todo` does you can just use `diff-todo`, e.g.
 $ git diff v1.0.1...v1.0.0 | diff-todo
 ```
 
+## Installing
+
+Currently, we only support installing from source.
+
+```
+$ cabal configure
+$ cabal install
+```
+
+You can also install the latest released version directly from Hackage:
+
+```
+$ cabal install difftodo
+```
+
+The `git todo` command assumes that `git` is available on the `PATH`.
+
 ## Building
 
 ```

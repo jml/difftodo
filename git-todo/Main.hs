@@ -62,13 +62,11 @@ commentsFromDiff :: IO [Comment]
 commentsFromDiff = do
   -- TODO: Take git diff flags as options
   diff <- loadDiff
-  if ByteString.null diff
-    then pure []
-    else case Fixme.newCommentsFromDiff diff of
-           Left e -> do
-             hPutStrLn stderr $ "ERROR: " <> e
-             exitWith (ExitFailure 1)
-           Right comments -> pure comments
+  case Fixme.newCommentsFromDiff diff of
+    Left e -> do
+      hPutStrLn stderr $ "ERROR: " <> e
+      exitWith (ExitFailure 1)
+    Right comments -> pure comments
 
   where
     -- TODO: Read this as a bytestring from the start
@@ -79,14 +77,21 @@ commentsFromDiff = do
         else pure d
 
 commentsFromFiles :: [FilePath] -> IO [Comment]
-commentsFromFiles paths = concatMapM (map (maybe [] identity) . Fixme.readComments) =<< gitListFiles paths
+commentsFromFiles paths =
+  concatMapM commentsFrom =<< gitListFiles paths
+  where
+    -- If we can't figure out the language, then just assume it has no
+    -- comments of interest.
+    commentsFrom path = fromMaybe [] <$> Fixme.readComments path
 
 -- TODO: Use gitlib
 
 -- | Run `git diff <diffspec>` in the current working directory.
 gitDiff :: Maybe Text -> IO ByteString
-gitDiff (Just diffSpec) = toS <$> readProcess "git" ["diff", toS diffSpec] ""
-gitDiff Nothing = toS <$> readProcess "git" ["diff"] ""
+gitDiff diffSpec =
+  toS <$> readProcess "git" ("diff":arg) ""
+  where
+    arg = maybeToList (toS <$> diffSpec)
 
 -- TODO: Factor out todo reporting
 
@@ -96,8 +101,9 @@ gitDiff Nothing = toS <$> readProcess "git" ["diff"] ""
 gitListFiles :: [FilePath] -> IO [FilePath]
 gitListFiles files = do
   -- TODO: Don't assume git repo location is CWD
-  output <- readProcess "git" ("ls-files":files) ""
-  pure (map toS (Text.lines (toS output)))
+  toLines <$> readProcess "git" ("ls-files":files) ""
+  where
+    toLines = map toS . Text.lines . toS
 
 
 main :: IO ()
