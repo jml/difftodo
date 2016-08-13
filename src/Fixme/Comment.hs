@@ -57,13 +57,13 @@ parseComments' filename =
 --
 -- Return Nothing if we cannot determine what language the file is in. Raises
 -- exceptions on bad IO, and also if the file cannot be decoded to Text.
-readComments :: FilePath -> IO (Maybe [Comment])
+readComments :: FilePath -> Maybe (IO [Comment])
 readComments filename =
   case languageForFile (toS filename) of
-    Nothing -> pure Nothing
-    Just language -> do
+    Nothing -> Nothing
+    Just language -> Just $ do
       contents <- readFile filename
-      pure (Just $ parseComments (Just (toS filename)) language contents)
+      pure (parseComments (Just (toS filename)) language contents)
 
 
 -- | A thing that is located somewhere in a text file.

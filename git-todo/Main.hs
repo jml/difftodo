@@ -82,7 +82,7 @@ commentsFromFiles paths =
   where
     -- If we can't figure out the language, then just assume it has no
     -- comments of interest.
-    commentsFrom path = fromMaybe [] <$> Fixme.readComments path
+    commentsFrom path = fromMaybe (pure []) (Fixme.readComments path)
 
 -- TODO: Use gitlib
 

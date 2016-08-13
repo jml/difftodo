@@ -40,9 +40,9 @@ options =
 main :: IO ()
 main = do
   files <- execParser options
-  forM_ files $ \filename -> do
-    comments' <- Fixme.readComments filename
-    case comments' of
-      Nothing -> pure ()
-      Just comments -> do
-        mapM_ (putStrLn . Fixme.formatTodo) (concatMap Fixme.getTodos comments)
+  comments <- concatMapM commentsFrom files
+  mapM_ (putStrLn . Fixme.formatTodo) (concatMap Fixme.getTodos comments)
+  where
+    -- If we can't figure out the language, then just assume it has no
+    -- comments of interest.
+    commentsFrom path = fromMaybe (pure []) (Fixme.readComments path)
