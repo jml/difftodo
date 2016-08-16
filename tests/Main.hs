@@ -6,6 +6,7 @@ import Test.Tasty (defaultMain, TestTree, testGroup)
 
 import qualified Comment
 import qualified Diff
+import qualified Todo
 
 
 main :: IO ()
@@ -14,6 +15,7 @@ main = defaultMain tests
 tests :: TestTree
 tests =
   testGroup "Fixme"
-  [ Diff.tests
-  , Comment.tests
+  [ Comment.tests
+  , Diff.tests
+  , Todo.tests
   ]

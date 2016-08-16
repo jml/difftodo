@@ -2,14 +2,21 @@ module Comment (tests) where
 
 import Protolude
 
-import Data.Text (stripEnd, unlines)
+import qualified Data.ByteString as ByteString
+import Data.ByteString.Char8 (unlines)
+import Data.Maybe (fromJust)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit
-
-import Text.Highlighting.Kate (TokenType(..))
+import Text.Highlighter
+  ( lexerFromFilename
+  , shortName
+  , Token(..)
+  , TokenType(..)
+  )
+import Text.Show.Pretty (ppShow)
 
 import Fixme.Comment
-  ( parseComments'
+  ( Language
   , parseComments
   , newComment
   , highlightCode
@@ -19,104 +26,18 @@ import Fixme.Comment
 tests :: TestTree
 tests =
   testGroup "Fixme.Comment"
-  [ testGroup "Text.Highlighting.Kate"
+  [ -- | Exploratory tests that show how our underlying lexer actually works.
+    testGroup "Text.Highlighter"
     [ testCase "parse python" $ do
-        let lexed = highlightCode "python" (toS pythonExample)
-        let expected = [ [(CommentTok,"# first comment")]
-                       , []
-                       , [(CommentTok,"# second comment")]
-                       , [(CommentTok,"# is multi-line")]
-                       , []
-                       , [(DecValTok,"1"),(NormalTok," "),(OperatorTok,"+"),(NormalTok," "),(DecValTok,"2"),(NormalTok,"  "),(CommentTok,"# trailing comment")]
+        let lexed = highlightCode python pythonExample
+        let expected = [ comment "# first comment", eol
+                       , eol
+                       , comment "# second comment", eol
+                       , comment "# is multi-line", eol
+                       , eol
+                       , Token (Literal :. Number :. Integer) "1", text " ", Token Operator "+", text " ", Token (Literal :. Number :. Integer) "2", text "  ", comment "# trailing comment", eol
                        ]
-        expected @=? lexed
-    , testCase "parse haskell" $ do
-        let lexed = highlightCode "haskell" (toS haskellExample)
-        let expected = [ [(CommentTok,"-- first comment")]
-                       , []
-                       , [(CommentTok,"-- second comment")]
-                       , [(CommentTok,"-- is multi-line")]
-                       , []
-                       , [(CommentTok,"{- comment block start")]
-                       , [(CommentTok,"continues")]
-                       , [(CommentTok,"ends -}")]
-                       , []
-                       , [ (NormalTok,"f "),(FunctionTok,"="),(NormalTok," "),(CommentTok,"{- foo -}"),(NormalTok," ")
-                         , (StringTok,"\"bar\""),(NormalTok," "),(CommentTok,"{- baz -}"),(NormalTok," ")
-                         , (CommentTok,"-- qux")
-                         ]
-                       ]
-        expected @=? lexed
-    , testCase "parse indented haskell" $ do
-        let lexed = highlightCode "haskell" (toS indentedHaskellExample)
-        let expected = [ [(CommentTok,"-- first comment")]
-                       , []
-                       , [(NormalTok," "),(NormalTok," "),(CommentTok,"-- second comment")]
-                       , [(NormalTok," "),(NormalTok," "),(CommentTok,"-- is multi-line")]
-                       , []
-                       , [(CommentTok,"{- comment block start")]
-                       , [(CommentTok,"   continues")]
-                       , [(CommentTok,"   ends -}")]
-                       ]
-        expected @=? lexed
-    , testCase "parse comment with newline" $ do
-        let example = unlines $ [ "-- first line"
-                                , "--"
-                                , "-- second line"
-                                ]
-        let expected = [ [(CommentTok,"-- first line")]
-                       , [(CommentTok,"--")]
-                       , [(CommentTok,"-- second line")]
-                       ]
-        expected @=? highlightCode "haskell" (toS example)
-    , testCase "parse comment with newline (indented)" $ do
-        let example = unlines $ [ "  -- first line"
-                                , "  --"
-                                , "  -- second line"
-                                ]
-        let expected = [ [(NormalTok," "),(NormalTok," "),(CommentTok,"-- first line")]
-                       , [(NormalTok," "),(NormalTok," "),(CommentTok,"--")]
-                       , [(NormalTok," "),(NormalTok," "),(CommentTok,"-- second line")]
-                       ]
-        expected @=? highlightCode "haskell" (toS example)
-    , testCase "parse comment with newline (python)" $ do
-        let example = unlines $ [ "# first line"
-                                , "#"
-                                , "# second line"
-                                ]
-        let expected = [ [(CommentTok,"# first line")]
-                       , [(CommentTok,"#")]
-                       , [(CommentTok,"# second line")]
-                       ]
-        expected @=? highlightCode "python" (toS example)
-    ]
-  , testGroup "Parsing comments from tokens"
-    [ testCase "Parse Python example" $ do
-        let input = [ [(CommentTok,"# first comment")]
-                    , []
-                    , [(CommentTok,"# second comment")]
-                    , [(CommentTok,"# is multi-line")]
-                    , []
-                    , [(DecValTok,"1"),(NormalTok," "),(OperatorTok,"+"),(NormalTok," "),(DecValTok,"2"),(NormalTok,"  "),(CommentTok,"# trailing comment")]
-                    ]
-        let expected = [ newComment Nothing 0 "# first comment"
-                       , newComment Nothing 2 "# second comment\n# is multi-line"
-                       , newComment Nothing 5 "# trailing comment"
-                       ]
-        expected @=? parseComments' Nothing input
-    , testCase "Parse indented example" $ do
-        let input = [ [(NormalTok," "),(NormalTok," "),(CommentTok,"-- second comment")]
-                    , [(NormalTok," "),(NormalTok," "),(CommentTok,"-- is multi-line")]
-                    ]
-        let expected = [ newComment Nothing 0 "-- second comment\n-- is multi-line" ]
-        expected @=? parseComments' Nothing input
-    , testCase "Commented blank line continues comment" $ do
-        let input = [ [(CommentTok,"# comment")]
-                    , [(CommentTok,"#")]
-                    , [(CommentTok,"# is multi-line")]
-                    ]
-        let expected = [ newComment Nothing 0 "# comment\n#\n# is multi-line" ]
-        expected @=? parseComments' Nothing input
+        expected `tokensEqual` lexed
     ]
   , testGroup "Parsing comments from source"
     [ testCase "Multi-line Haskell comment" $ do
@@ -128,12 +49,19 @@ tests =
               , "--"
               , "-- Conclusion"
               ]
-        let expected = [ newComment Nothing 0 (stripEnd example) ]
-        expected @=? parseComments Nothing "haskell" example
+        let expected = [ newComment Nothing 0 (ByteString.init example) ]
+        expected @=? parseComments Nothing haskell example
     ]
   ]
 
-pythonExample :: Text
+
+haskell :: Language
+haskell = fromJust (lexerFromFilename "foo.hs")
+
+python :: Language
+python =  fromJust (lexerFromFilename "foo.py")
+
+pythonExample :: ByteString
 pythonExample = unlines $
   [ "# first comment"
   , ""
@@ -143,28 +71,27 @@ pythonExample = unlines $
   , "1 + 2  # trailing comment"
   ]
 
-haskellExample :: Text
-haskellExample = unlines $
-  [ "-- first comment"
-  , ""
-  , "-- second comment"
-  , "-- is multi-line"
-  , ""
-  , "{- comment block start"
-  , "continues"
-  , "ends -}"
-  , ""
-  , "f = {- foo -} \"bar\" {- baz -} -- qux"
-  ]
 
-indentedHaskellExample :: Text
-indentedHaskellExample = unlines $
-  [ "-- first comment"
-  , ""
-  , "  -- second comment"
-  , "  -- is multi-line"
-  , ""
-  , "{- comment block start"
-  , "   continues"
-  , "   ends -}"
-  ]
+equalsBy :: (a -> a -> Bool) -> [a] -> [a] -> Bool
+equalsBy _ [] []         = True
+equalsBy _ _  []         = False
+equalsBy _ [] _          = False
+equalsBy p (x:xs) (y:ys) = p x y && equalsBy p xs ys
+
+tokensEqual :: [Token] -> [Token] -> Assertion
+tokensEqual xs ys =
+  assertBool (ppShow xs <> " /= " <> ppShow ys) (equalsBy tokenEquals xs ys)
+  where
+    tokenEquals (Token xType xText) (Token yType yText) =
+      (and [ shortName xType == shortName yType, xText == yText ])
+
+
+comment :: ByteString -> Token
+comment = Token Comment
+
+text :: ByteString -> Token
+text = Token Text
+
+eol :: Token
+eol = Token Text "\n"
+

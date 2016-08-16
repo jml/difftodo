@@ -1,6 +1,6 @@
-{ mkDerivation, base, bytestring, diff-parse, highlighting-kate
-, optparse-applicative, process, protolude, stdenv, tasty
-, tasty-hunit, text
+{ mkDerivation, base, bytestring, diff-parse, highlighter2
+, optparse-applicative, pretty-show, process, protolude, stdenv
+, tasty, tasty-hunit, text
 }:
 mkDerivation {
   pname = "difftodo";
@@ -9,13 +9,14 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    base bytestring diff-parse highlighting-kate protolude text
+    base bytestring diff-parse highlighter2 protolude text
   ];
   executableHaskellDepends = [
     base bytestring optparse-applicative process protolude text
   ];
   testHaskellDepends = [
-    base bytestring highlighting-kate protolude tasty tasty-hunit text
+    base bytestring highlighter2 pretty-show protolude tasty
+    tasty-hunit text
   ];
   homepage = "https://github.com/jml/difftodo#readme";
   description = "Generate todo lists from source code";

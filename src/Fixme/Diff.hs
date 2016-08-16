@@ -40,7 +40,7 @@ newCommentsFromDiff diff
     getNewCommentsForFile (FileDelta Deleted _ _ _) = Just []
     getNewCommentsForFile (FileDelta _ _ _ Binary) = Just []
     getNewCommentsForFile (FileDelta _ _ filename (Hunks hunks)) =
-      case languageForFile filename of
+      case languageForFile (toS filename) of
         Nothing -> Nothing
         Just language -> Just $ concatMap (getNewCommentsForHunk filename language) hunks
 
@@ -64,7 +64,7 @@ newCommentsFromDiff diff
 -- Here, "comment" means a contiguous sequence of comment tokens.
 getNewCommentsForHunk :: Text -> Language -> Hunk -> [Comment]
 getNewCommentsForHunk filename language hunk =
-  let comments = parseComments (Just filename) language afterText
+  let comments = parseComments (Just filename) language (toS afterText)
   in filterInsertions addedLineNumbers comments
   where
     -- | Reconstitute the "after" text of the diff hunk.
