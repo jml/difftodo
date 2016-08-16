@@ -7,6 +7,9 @@
 
 * New `git-todo` command shows todos based on git.
 
+* _Much_ faster. Now uses highlighter2 package instead of highlighting-kate.
+  (#22)
+
 ## 0.1.0 (2016-08-11)
 
 Complete rewrite in Haskell. Mostly command-line compatible with Python

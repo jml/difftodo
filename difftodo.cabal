@@ -29,7 +29,7 @@ library
     , text
     , bytestring
     , diff-parse
-    , highlighting-kate
+    , highlighter2
   exposed-modules:
       Fixme
       Fixme.Comment
@@ -95,8 +95,9 @@ test-suite fixme-tests
     , protolude >= 0.1.5
     , text
     , bytestring
-    , highlighting-kate
     , difftodo
+    , highlighter2
+    , pretty-show
     , tasty
     , tasty-hunit
   other-modules:

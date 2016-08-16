@@ -8,15 +8,18 @@ module Fixme.Todo
 import Protolude
 
 import qualified Data.Text as Text
-import Fixme.Comment (Comment, Located, commentText, filename, startLine)
-
+import Fixme.Comment (Comment, Located, commentText, filename, startLine, locatedValue)
 
 type Todo = Located Text
 
+todoText :: Todo -> Text
+todoText = locatedValue
+
+
 getTodos :: Comment -> [Todo]
 getTodos comment =
-  if any (`Text.isInfixOf` commentText comment) defaultTags then
-    [comment] else []
+  if any (`Text.isInfixOf` (toS (commentText comment))) defaultTags then
+    [toS <$> comment] else []
 
 formatTodo :: Todo -> Text
 formatTodo todo =
@@ -24,7 +27,7 @@ formatTodo todo =
   where
     fn = maybe "<unknown>" identity (filename todo)
     lineNum = show (startLine todo)
-    indentedComment = Text.unlines (map ("  " <>) (Text.lines (commentText todo)))
+    indentedComment = Text.unlines (map ("  " <>) (Text.lines (todoText todo)))
 
 defaultTags :: [Text]
 defaultTags = [ "XXX"

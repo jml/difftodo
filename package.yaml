@@ -23,7 +23,7 @@ library:
   dependencies:
     - bytestring
     - diff-parse
-    - highlighting-kate
+    - highlighter2
 
 executables:
   all-todos:
@@ -58,7 +58,8 @@ tests:
     source-dirs: tests
     dependencies:
       - bytestring
-      - highlighting-kate
       - difftodo
+      - highlighter2
+      - pretty-show
       - tasty
       - tasty-hunit
