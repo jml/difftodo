@@ -70,9 +70,9 @@ commentsFromDiff =
 
     -- TODO: Read this as a bytestring from the start
     loadDiff = do
-      d <- gitDiff Nothing
+      d <- gitDiff Nothing []
       if ByteString.null d
-        then gitDiff (Just "master...")
+        then gitDiff (Just "master...") []
         else pure d
 
 commentsFromFiles :: [FilePath] -> IO [Comment]
@@ -86,15 +86,13 @@ commentsFromFiles paths =
 -- TODO: Use gitlib
 
 -- | Run `git diff <diffspec>` in the current working directory.
-gitDiff :: Maybe Text -> IO ByteString
-gitDiff diffSpec =
-  toS <$> readProcess "git" ("diff":arg) ""
+gitDiff :: Maybe Text -> [Text] -> IO ByteString
+gitDiff commits paths =
+  toS <$> readProcess "git" ("diff":args) ""
   where
-    arg = maybeToList (toS <$> diffSpec)
+    args = toS <$> maybeToList commits <> ("--":paths)
 
 -- TODO: Factor out todo reporting
-
--- TODO: Kind of slow. About 3.7s on a git repo with 232 files.
 
 -- | Run `git ls-files` with the given files in the current working directory.
 gitListFiles :: [FilePath] -> IO [FilePath]
