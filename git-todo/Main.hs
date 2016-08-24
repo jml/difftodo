@@ -40,6 +40,7 @@ import Options.Applicative
   , metavar
   , progDesc
   , short
+  , switch
   , str
   )
 import System.IO (stderr)
@@ -49,23 +50,21 @@ import qualified Fixme
 import Fixme.Comment (Comment)
 
 
-data TodoMode = Diff | Files deriving (Eq, Show)
-
-data Config = Config { mode :: TodoMode
-                     , args :: [FilePath]
-                     } deriving (Eq, Show)
-
+data Config = Diff Bool [FilePath] | Files [FilePath] deriving (Eq, Show)
 
 options :: ParserInfo Config
 options =
   info (helper <*> parser) description
   where
-    -- TODO: Handle --cached flag.
-    parser = Config <$> modeFlag <*> many (argument str (metavar "FILES..."))
-    modeFlag = flag Diff Files (mconcat [ long "files"
-                                        , short 'f'
-                                        , help "Show all todos in source files instead of examining diffs"
-                                        ])
+    parser = modeFlag <*> cachedFlag <*> many (argument str (metavar "FILES..."))
+
+    modeFlag = flag Diff (const Files) (mconcat [ long "files"
+                                                , short 'f'
+                                                , help "Show all todos in source files instead of examining diffs"
+                                                ])
+    cachedFlag = switch (mconcat [ long "cached"
+                                 , help "Get todos from changes staged for next commit, optionally relative to another commit. Ignored if --files is set."
+                                 ])
     description = mconcat
       [ fullDesc
       , progDesc "Get todos from source code in git"
@@ -108,7 +107,8 @@ gitListFiles files =
 main :: IO ()
 main = do
   config <- execParser options
-  comments <- case mode config of
-                Diff -> commentsFromDiff (args config)
-                Files -> commentsFromFiles (args config)
+  comments <- case config of
+                Diff False args -> commentsFromDiff args
+                Diff True args  -> commentsFromDiff ("--cached":args)
+                Files args      -> commentsFromFiles args
   mapM_ (putStrLn . Fixme.formatTodo) (concatMap Fixme.getTodos comments)
