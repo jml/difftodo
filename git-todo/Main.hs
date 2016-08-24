@@ -1,25 +1,28 @@
 -- | Get todos from git
 --
--- A bare `git todo` invocation will do different things based on your git
--- checkout state:
+-- Use git-todo to find all of the TODOs in a git repository.
 --
--- If you have local, unstaged changes, it will show all todos in the unstaged
--- code.
+-- e.g.
 --
--- If you have no local changes, it will show all of the todos between your branch and
--- `master`.
+-- To see all the todos added between your working tree and HEAD:
+--     $ git todo
 --
--- You can also see the todos present in particular files by running
+-- To see all the todos in your branch:
+--     $ git todo origin/master
 --
---     $ git todo <path> <path> ...
+-- To see all the todos in your code base:
+--     $ git todo --files
 --
--- These paths will recurse, using git ls-files.
+-- git-todo arguments behave like git-diff arguments, unless --files is
+-- specified, in which case they act like git-ls-files arguments.
+
+-- TODO: `git todo --help` doesn't work because it needs a manpage. Try to
+-- make it work somehow.
 
 module Main (main) where
 
 import Protolude
 
-import qualified Data.ByteString as ByteString
 import qualified Data.Text as Text
 import Data.Text.IO (hPutStrLn)
 import GHC.IO (FilePath)
@@ -27,12 +30,16 @@ import Options.Applicative
   ( ParserInfo
   , argument
   , execParser
+  , flag
   , fullDesc
   , header
+  , help
   , helper
   , info
+  , long
   , metavar
   , progDesc
+  , short
   , str
   )
 import System.IO (stderr)
@@ -42,7 +49,10 @@ import qualified Fixme
 import Fixme.Comment (Comment)
 
 
-data Config = Config { paths :: [FilePath]
+data TodoMode = Diff | Files deriving (Eq, Show)
+
+data Config = Config { mode :: TodoMode
+                     , args :: [FilePath]
                      } deriving (Eq, Show)
 
 
@@ -50,30 +60,24 @@ options :: ParserInfo Config
 options =
   info (helper <*> parser) description
   where
-    parser = Config <$> many (argument str (metavar "FILES..."))
-
+    parser = Config <$> modeFlag <*> many (argument str (metavar "FILES..."))
+    modeFlag = flag Diff Files (mconcat [ long "files"
+                                        , short 'f'
+                                        , help "Show all todos in source files instead of examining diffs"
+                                        ])
     description = mconcat
       [ fullDesc
       , progDesc "Get todos from source code in git"
       , header "git-todo - Get todos from source code in git"
       ]
 
-commentsFromDiff :: IO [Comment]
-commentsFromDiff =
-  -- TODO: Take git diff flags as option
-  either abort pure . Fixme.newCommentsFromDiff =<< loadDiff
-
+commentsFromDiff :: [FilePath] -> IO [Comment]
+commentsFromDiff args =
+  either abort pure . Fixme.newCommentsFromDiff =<< gitDiff args
   where
     abort e = do
       hPutStrLn stderr $ "ERROR: " <> e
       exitWith (ExitFailure 1)
-
-    -- TODO: Read this as a bytestring from the start
-    loadDiff = do
-      d <- gitDiff Nothing []
-      if ByteString.null d
-        then gitDiff (Just "master...") []
-        else pure d
 
 commentsFromFiles :: [FilePath] -> IO [Comment]
 commentsFromFiles paths =
@@ -86,11 +90,8 @@ commentsFromFiles paths =
 -- TODO: Use gitlib
 
 -- | Run `git diff <diffspec>` in the current working directory.
-gitDiff :: Maybe Text -> [Text] -> IO ByteString
-gitDiff commits paths =
-  toS <$> readProcess "git" ("diff":args) ""
-  where
-    args = toS <$> maybeToList commits <> ("--":paths)
+gitDiff :: [FilePath] -> IO ByteString
+gitDiff args = toS <$> readProcess "git" ("diff":args) ""
 
 -- TODO: Factor out todo reporting
 
@@ -106,7 +107,7 @@ gitListFiles files =
 main :: IO ()
 main = do
   config <- execParser options
-  comments <- case paths config of
-                [] -> commentsFromDiff
-                filenames -> commentsFromFiles filenames
+  comments <- case mode config of
+                Diff -> commentsFromDiff (args config)
+                Files -> commentsFromFiles (args config)
   mapM_ (putStrLn . Fixme.formatTodo) (concatMap Fixme.getTodos comments)
