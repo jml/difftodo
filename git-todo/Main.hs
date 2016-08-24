@@ -60,6 +60,7 @@ options :: ParserInfo Config
 options =
   info (helper <*> parser) description
   where
+    -- TODO: Handle --cached flag.
     parser = Config <$> modeFlag <*> many (argument str (metavar "FILES..."))
     modeFlag = flag Diff Files (mconcat [ long "files"
                                         , short 'f'
