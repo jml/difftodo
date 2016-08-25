@@ -19,7 +19,7 @@ Otherwise, `git todo` will show all TODOs between your branch and `master`.
 ### What do I need to do before merging this git branch?
 
 ```
-$ git todo
+$ git todo origin/master...
 git-todo/Main.hs:62:
   -- TODO: Take git diff flags as options
 
@@ -38,10 +38,16 @@ git-todo/Main.hs:90:
   -- TODO: Factor out todo reporting
 ```
 
+### Have I staged any TODOs?
+
+```
+$ git todo --cached
+```
+
 ### What TODOs are left in my code base?
 
 ```
-$ git todo .
+$ git todo --files
 ... too many to list here! ...
 ```
 
