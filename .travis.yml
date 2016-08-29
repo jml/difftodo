@@ -31,7 +31,7 @@ matrix:
 
   # The Stack builds. We can pass in arbitrary Stack arguments via the ARGS
   # variable, such as using --stack-yaml to point to a different file.
-  - env: BUILD=stack ARGS=""
+  - env: BUILD=stack ARGS="--no-nix"
     compiler: ": #stack default"
     addons: {apt: {packages: [ghc-8.0.1], sources: [hvr-ghc]}}
 
