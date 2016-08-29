@@ -46,6 +46,11 @@ matrix:
     compiler: ": #stack default osx"
     os: osx
 
+  # jml's dev environment
+  - env: BUILD=stack ARGS=""
+    compiler: ": #stack default osx nix"
+    os: osx
+
 
 before_install:
 # Using compiler above sets CC to an invalid value, so unset it
