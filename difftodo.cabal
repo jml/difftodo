@@ -1,10 +1,11 @@
--- This file has been generated from package.yaml by hpack version 0.14.0.
+-- This file has been generated from package.yaml by hpack version 0.13.0.
 --
 -- see: https://github.com/sol/hpack
 
 name:           difftodo
 version:        0.1.0
 synopsis:       Generate todo lists from source code
+description:    See README.md for details
 category:       Development
 homepage:       https://github.com/jml/difftodo#readme
 bug-reports:    https://github.com/jml/difftodo/issues

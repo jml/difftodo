@@ -1,4 +1,4 @@
-# difftodo
+# difftodo [![Build Status](https://travis-ci.org/jml/difftodo.svg)](https://travis-ci.org/jml/difftodo)
 
 Do you litter your code with `XXX`, `TODO`, and `FIXME` comments? Would you
 like to actually _do_ those TODOs and _fix_ those FIXMEs? If so, `difftodo`
