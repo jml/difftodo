@@ -63,6 +63,8 @@ before_install:
   if [ `uname` = "Darwin" ]
   then
     travis_retry curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
+    # XXX: Not strictly necessary when we're building with Nix, but won't hurt
+    # things either due to Nix's isolation (I hope!)
     brew update
     brew install pcre
   else
