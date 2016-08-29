@@ -17,7 +17,7 @@ tests =
       expected @=? getTodos comment
   , testCase "One todo" $ do
       let comment = newComment (Just "somefile") 1 "# TODO: wolverhampton"
-      let expected = []
+      let expected = [ toS <$> comment ]
       let observed = getTodos comment
       expected @=? observed
   ]
