@@ -1,8 +1,7 @@
 # Use new container infrastructure to enable caching
 sudo: false
 
-# Choose a lightweight base image; we provide our own build tools.
-language: c
+language: nix
 
 # We're configured elsewhere to build PRs. The only branch that needs to be
 # built automatically is master.
