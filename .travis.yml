@@ -36,7 +36,7 @@ matrix:
     addons: {apt: {packages: [ghc-8.0.1], sources: [hvr-ghc]}}
 
   # Build on OS X in addition to Linux
-  - env: BUILD=stack ARGS=""
+  - env: BUILD=stack ARGS="--no-nix"
     compiler: ": #stack default osx"
     os: osx
 
