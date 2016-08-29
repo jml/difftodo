@@ -1,0 +1,18 @@
+# We're only supporting GHC 8.0+, and we're not offering any library suppoort,
+# so OK to use nightly for now.
+resolver: nightly-2016-08-27
+
+packages:
+- '.'
+
+extra-deps:
+  - diff-parse-0.2.1
+  - highlighter2-0.2.5
+
+# Sorry, non-Nix users -- I need this to do things on my Mac without going
+# mad. Am open to patches & ideas.
+nix:
+  enable: true
+  packages:
+    - pcre
+    - pkgconfig
