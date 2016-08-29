@@ -1,3 +1,7 @@
+# Build is actually done with stack (https://haskellstack.org)
+#
+# This is mostly for generating the cabal and nix files from the package.yaml.
+
 .PHONY: all check
 
 all: default.nix difftodo.cabal
@@ -9,4 +13,4 @@ difftodo.cabal: package.yaml
 	hpack
 
 check:
-	nix-shell --run "cabal build"
+	stack test
