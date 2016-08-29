@@ -4,6 +4,12 @@ sudo: false
 # Choose a lightweight base image; we provide our own build tools.
 language: c
 
+# We're configured elsewhere to build PRs. The only branch that needs to be
+# built automatically is master.
+branches:
+  only:
+    - "master"
+
 # Caching so the next build will be fast too.
 cache:
   directories:
