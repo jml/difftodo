@@ -1,9 +1,9 @@
 # Change log
 
-## Unreleased
+## 0.2.0 (2016-09-10)
 
-* Show filename and line number in output of `diff-todo` and `all-todos`.
-  Means they can be used as Emacs compile output.
+* Show filename and line number in output of `diff-todo` and `all-todos`,
+  so they can be used as Emacs `compile` output.
 
 * New `git-todo` command shows todos based on git.
 
