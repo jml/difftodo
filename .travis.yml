@@ -18,26 +18,24 @@ cache:
 
 # We set the compiler values here to tell Travis to use a different
 # cache file per set of arguments.
-#
-# If you need to have different apt packages for each combination in the
-# matrix, you can use a line such as:
-#     addons: {apt: {packages: [libfcgi-dev,libgmp-dev]}}
 matrix:
   include:
   - env: STACK_ARGS="--no-nix"
     compiler: ": #stack linux"
-    addons:
-      apt:
-        packages:
-          - stack
-        sources:
-          - fpcomplete-trusty
+    # Until travis-ci/apt-package-whitelist#379 is fixed, we have to install
+    # manually.
+    before_install:
+      - unset CC
+      - mkdir -p $HOME/.local/bin
+      - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C $HOME/.local/bin '*/stack'
 
   # Build on OS X in addition to Linux
   - env: STACK_ARGS="--no-nix"
     compiler: ": #stack osx"
     os: osx
     before_install:
+      - unset CC
+      - mkdir -p $HOME/.local/bin
       - travis_retry curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
       - |
         brew update
