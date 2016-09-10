@@ -1,7 +1,6 @@
-# Use new container infrastructure to enable caching
 sudo: false
 
-language: nix
+language: c
 
 # We're configured elsewhere to build PRs. The only branch that needs to be
 # built automatically is master.
@@ -12,10 +11,10 @@ branches:
 # Caching so the next build will be fast too.
 cache:
   directories:
-  - $HOME/.ghc
-  - $HOME/.cabal
-  - $HOME/.stack
-  - /nix
+    - $HOME/.ghc
+    - $HOME/.cabal
+    - $HOME/.local
+    - $HOME/.stack
 
 # We set the compiler values here to tell Travis to use a different
 # cache file per set of arguments.
@@ -26,58 +25,26 @@ cache:
 matrix:
   include:
   - env: STACK_ARGS="--no-nix"
-    compiler: ": #stack default"
-    addons: {apt: {packages: [ghc-8.0.1], sources: [hvr-ghc]}}
+    compiler: ": #stack linux"
+    addons:
+      apt:
+        packages:
+          - stack
+        sources:
+          - fpcomplete-trusty
 
   # Build on OS X in addition to Linux
   - env: STACK_ARGS="--no-nix"
-    compiler: ": #stack default osx"
+    compiler: ": #stack osx"
     os: osx
-
-  # jml's dev environment
-  - env: STACK_ARGS="--nix"
-    compiler: ": #stack default osx nix"
-    os: osx
-
-
-before_install:
-# Using compiler above sets CC to an invalid value, so unset it
-- unset CC
-
-# Download and unpack the stack executable
-- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:/opt/alex/$ALEXVER/bin:/opt/happy/$HAPPYVER/bin:$HOME/.cabal/bin:$PATH
-- mkdir -p ~/.local/bin
-- |
-  if [ `uname` = "Darwin" ]
-  then
-    travis_retry curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
-    # XXX: Not strictly necessary when we're building with Nix, but won't hurt
-    # things either due to Nix's isolation (I hope!)
-    brew update
-    brew install pcre
-  else
-    travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
-  fi
-
-  # Use the more reliable S3 mirror of Hackage
-  mkdir -p $HOME/.cabal
-  echo 'remote-repo: hackage.haskell.org:http://hackage.fpcomplete.com/' > $HOME/.cabal/config
-  echo 'remote-repo-cache: $HOME/.cabal/packages' >> $HOME/.cabal/config
-  echo 'jobs: $ncpus' >> $HOME/.cabal/config
-
-# Get the list of packages from the stack.yaml file
-- PACKAGES=$(stack --install-ghc $STACK_ARGS query locals | grep '^ *path' | sed 's@^ *path:@@')
+    before_install:
+      - travis_retry curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
+      - |
+        brew update
+        brew install pcre
 
 install:
-- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
-- if [ -f configure.ac ]; then autoreconf -i; fi
-- |
-  set -ex
-  stack --no-terminal --install-ghc $STACK_ARGS test --bench --only-dependencies
-  set +ex
+  - stack --no-terminal --install-ghc $STACK_ARGS test --bench --only-dependencies
 
 script:
-- |
-  set -ex
-  stack --no-terminal $STACK_ARGS test --bench --no-run-benchmarks --haddock --no-haddock-deps
-  set +ex
+  - stack --no-terminal $STACK_ARGS test --bench --no-run-benchmarks --haddock --no-haddock-deps
