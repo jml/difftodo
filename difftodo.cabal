@@ -1,4 +1,4 @@
--- This file has been generated from package.yaml by hpack version 0.13.0.
+-- This file has been generated from package.yaml by hpack version 0.14.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -41,7 +41,7 @@ library
 executable all-todos
   main-is: Main.hs
   hs-source-dirs:
-      all-todos
+      cmd/all-todos
   default-extensions: NoImplicitPrelude OverloadedStrings NamedFieldPuns RecordWildCards
   ghc-options: -Wall
   build-depends:
@@ -55,7 +55,7 @@ executable all-todos
 executable diff-todo
   main-is: Main.hs
   hs-source-dirs:
-      diff-todo
+      cmd/diff-todo
   default-extensions: NoImplicitPrelude OverloadedStrings NamedFieldPuns RecordWildCards
   ghc-options: -Wall
   build-depends:
@@ -70,7 +70,7 @@ executable diff-todo
 executable git-todo
   main-is: Main.hs
   hs-source-dirs:
-      git-todo
+      cmd/git-todo
   default-extensions: NoImplicitPrelude OverloadedStrings NamedFieldPuns RecordWildCards
   ghc-options: -Wall
   build-depends:
