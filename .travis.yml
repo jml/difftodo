@@ -22,6 +22,12 @@ matrix:
   include:
   - env: STACK_ARGS="--no-nix"
     compiler: ": #stack linux"
+    addons:
+      apt:
+        packages:
+          - libgmp
+          - libgmp-dev
+
     # Until travis-ci/apt-package-whitelist#379 is fixed, we have to install
     # manually.
     before_install:
