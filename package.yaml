@@ -29,14 +29,14 @@ library:
 executables:
   all-todos:
     main: Main.hs
-    source-dirs: all-todos
+    source-dirs: cmd/all-todos
     dependencies:
       - difftodo
       - optparse-applicative
 
   diff-todo:
     main: Main.hs
-    source-dirs: diff-todo
+    source-dirs: cmd/diff-todo
     dependencies:
       - bytestring
       - difftodo
@@ -44,7 +44,7 @@ executables:
 
   git-todo:
     main: Main.hs
-    source-dirs: git-todo
+    source-dirs: cmd/git-todo
     dependencies:
       - bytestring
       - difftodo
