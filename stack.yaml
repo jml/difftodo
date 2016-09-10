@@ -9,10 +9,10 @@ extra-deps:
   - diff-parse-0.2.1
   - highlighter2-0.2.5
 
-# Sorry, non-Nix users -- I need this to do things on my Mac without going
-# mad. Am open to patches & ideas.
+# jml uses 'nix' to build on Darwin. These are the non-Haskell packages
+# required.
 nix:
-  enable: true
+  enable: false
   packages:
     - pcre
     - pkgconfig

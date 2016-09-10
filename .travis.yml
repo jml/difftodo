@@ -1,7 +1,6 @@
-# Use new container infrastructure to enable caching
 sudo: false
 
-language: nix
+language: c
 
 # We're configured elsewhere to build PRs. The only branch that needs to be
 # built automatically is master.
@@ -12,111 +11,44 @@ branches:
 # Caching so the next build will be fast too.
 cache:
   directories:
-  - $HOME/.ghc
-  - $HOME/.cabal
-  - $HOME/.stack
-  - /nix
+    - $HOME/.ghc
+    - $HOME/.cabal
+    - $HOME/.local
+    - $HOME/.stack
 
-# The different configurations we want to test. We have BUILD=cabal which uses
-# cabal-install, and BUILD=stack which uses Stack. More documentation on each
-# of those below.
-#
 # We set the compiler values here to tell Travis to use a different
 # cache file per set of arguments.
-#
-# If you need to have different apt packages for each combination in the
-# matrix, you can use a line such as:
-#     addons: {apt: {packages: [libfcgi-dev,libgmp-dev]}}
 matrix:
   include:
-  # We grab the appropriate GHC and cabal-install versions from hvr's PPA. See:
-  # https://github.com/hvr/multi-ghc-travis
-  - env: BUILD=cabal GHCVER=8.0.1 CABALVER=1.24 HAPPYVER=1.19.5 ALEXVER=3.1.7
-    compiler: ": #GHC 8.0.1"
-    addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.1,happy-1.19.5,alex-3.1.7], sources: [hvr-ghc]}}
+  - env: STACK_ARGS="--no-nix"
+    compiler: ": #stack linux"
+    addons:
+      apt:
+        packages:
+          - libgmp
+          - libgmp-dev
 
-  # The Stack builds. We can pass in arbitrary Stack arguments via the ARGS
-  # variable, such as using --stack-yaml to point to a different file.
-  - env: BUILD=stack ARGS="--no-nix"
-    compiler: ": #stack default"
-    addons: {apt: {packages: [ghc-8.0.1], sources: [hvr-ghc]}}
+    # Until travis-ci/apt-package-whitelist#379 is fixed, we have to install
+    # manually.
+    before_install:
+      - unset CC
+      - mkdir -p $HOME/.local/bin
+      - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C $HOME/.local/bin '*/stack'
 
   # Build on OS X in addition to Linux
-  - env: BUILD=stack ARGS="--no-nix"
-    compiler: ": #stack default osx"
+  - env: STACK_ARGS="--no-nix"
+    compiler: ": #stack osx"
     os: osx
-
-  # jml's dev environment
-  - env: BUILD=stack ARGS=""
-    compiler: ": #stack default osx nix"
-    os: osx
-
-
-before_install:
-# Using compiler above sets CC to an invalid value, so unset it
-- unset CC
-
-# Download and unpack the stack executable
-- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:/opt/alex/$ALEXVER/bin:/opt/happy/$HAPPYVER/bin:$HOME/.cabal/bin:$PATH
-- mkdir -p ~/.local/bin
-- |
-  if [ `uname` = "Darwin" ]
-  then
-    travis_retry curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
-    # XXX: Not strictly necessary when we're building with Nix, but won't hurt
-    # things either due to Nix's isolation (I hope!)
-    brew update
-    brew install pcre
-  else
-    travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
-  fi
-
-  # Use the more reliable S3 mirror of Hackage
-  mkdir -p $HOME/.cabal
-  echo 'remote-repo: hackage.haskell.org:http://hackage.fpcomplete.com/' > $HOME/.cabal/config
-  echo 'remote-repo-cache: $HOME/.cabal/packages' >> $HOME/.cabal/config
-  echo 'jobs: $ncpus' >> $HOME/.cabal/config
-
-# Get the list of packages from the stack.yaml file
-- PACKAGES=$(stack --install-ghc $ARGS query locals | grep '^ *path' | sed 's@^ *path:@@')
+    before_install:
+      - unset CC
+      - mkdir -p $HOME/.local/bin
+      - travis_retry curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
+      - |
+        brew update
+        brew install pcre
 
 install:
-- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
-- if [ -f configure.ac ]; then autoreconf -i; fi
-- |
-  set -ex
-  case "$BUILD" in
-    stack)
-      stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
-      ;;
-    cabal)
-      cabal --version
-      travis_retry cabal update
-      cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS $PACKAGES
-      ;;
-  esac
-  set +ex
+  - stack --no-terminal --install-ghc $STACK_ARGS test --bench --only-dependencies
 
 script:
-- |
-  set -ex
-  case "$BUILD" in
-    stack)
-      stack --no-terminal $ARGS test --bench --no-run-benchmarks --haddock --no-haddock-deps
-      ;;
-    cabal)
-      cabal install --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS $PACKAGES
-
-      ORIGDIR=$(pwd)
-      for dir in $PACKAGES
-      do
-        cd $dir
-        cabal check
-        cabal sdist
-        SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && \
-          (cd dist && cabal install --force-reinstalls "$SRC_TGZ")
-        cd $ORIGDIR
-      done
-      ;;
-  esac
-  set +ex
+  - stack --no-terminal $STACK_ARGS test --bench --no-run-benchmarks --haddock --no-haddock-deps
