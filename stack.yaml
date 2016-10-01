@@ -1,6 +1,4 @@
-# We're only supporting GHC 8.0+, and we're not offering any library suppoort,
-# so OK to use nightly for now.
-resolver: nightly-2016-08-27
+resolver: lts-7.1
 
 packages:
 - '.'
@@ -12,7 +10,6 @@ extra-deps:
 # jml uses 'nix' to build on Darwin. These are the non-Haskell packages
 # required.
 nix:
-  enable: false
   packages:
     - pcre
     - pkgconfig
