@@ -75,32 +75,28 @@ $ git diff v1.0.1...v1.0.0 | diff-todo
 
 ## Installing
 
-Currently, we only support installing from source.
+### macOS
 
 ```
-$ cabal configure
-$ cabal install
+$ brew tap jml/difftodo
+$ brew install difftodo
 ```
 
-You can also install the latest released version directly from Hackage:
+### From source
+
+You need to have the following dependencies installed before you can build:
+* `pcre`
+* `pkg-config`
+
+The preferred method is to build
+using [Stack](https://docs.haskellstack.org/en/stable/README/). In a checkout
+of the repository, run:
 
 ```
-$ cabal install difftodo
+$ stack install
 ```
 
-The `git todo` command assumes that `git` is available on the `PATH`.
-
-## Building
-
-```
-$ cabal configure
-$ cabal build
-$ cabal test
-```
-
-The Cabal file is generated using `hpack`, and the `default.nix` file is
-generated using `cabal2nix`. If you run `make`, these two generated files will
-be updated.
+Note: the `git todo` command assumes that `git` is available on the `PATH`.
 
 ## History
 
